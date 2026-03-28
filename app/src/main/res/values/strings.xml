@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">ApniVehicle</string>
+
+    <!-- Home -->
+    <string name="search_hint">Search cars, bikes, parts…</string>
+
+    <string name="category_cars">Cars</string>
+    <string name="category_bikes">Bikes</string>
+    <string name="category_trucks">Trucks</string>
+    <string name="category_parts">Parts</string>
+    <string name="category_accessories">Accessories</string>
+
+    <string name="section_featured_listings">Featured Listings</string>
+    <string name="section_recently_added">Recently Added</string>
+
+    <string name="cd_post_ad">Post Ad</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_used_cars">Used Cars</string>
+    <string name="nav_new_cars">New Cars</string>
+    <string name="nav_bikes">Bikes</string>
+    <string name="nav_more">More</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_notifications">Notifications</string>
+
+    <!-- Vehicle card -->
+    <string name="verified">Verified ✓</string>
+    <string name="view_details">View Details</string>
+    <string name="cd_mileage">Mileage</string>
+    <string name="cd_location">Location</string>
+    <string name="cd_fuel">Fuel type</string>
+    <string name="cd_favorite">Favorite</string>
 </resources>

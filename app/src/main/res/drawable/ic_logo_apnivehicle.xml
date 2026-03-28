@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Simple AV monogram placeholder. Replace with brand mark later. -->
+    <path
+        android:fillColor="#C0392B"
+        android:pathData="M5,19L9,5h2l4,14h-2l-1,-4H8l-1,4H5zM8.5,13h3L10,7.5 8.5,13z" />
+    <path
+        android:fillColor="#922B21"
+        android:pathData="M15,5h2l2,14h-2l-0.4,-3H16.4L16,19h-2l1,-7.5L15,5z" />
+</vector>
+
