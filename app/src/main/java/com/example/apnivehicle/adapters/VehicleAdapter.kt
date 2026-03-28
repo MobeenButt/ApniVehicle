@@ -1,8 +1,12 @@
 package com.example.apnivehicle.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.ItemVehicleCardBinding
 import com.example.apnivehicle.models.Vehicle
@@ -10,58 +14,57 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class VehicleAdapter(
-    private var vehicles: List<Vehicle> = emptyList(),
-    private val onViewDetailsClick: (Vehicle) -> Unit = {},
-    private val onFavoriteClick: (Vehicle) -> Unit = {}
+    private val onItemClick: (Vehicle) -> Unit,
+    private val onFavoriteClick: (Vehicle) -> Unit,
+    private val onEditClick: (Vehicle) -> Unit = {},
+    private val onDeleteClick: (Vehicle) -> Unit = {},
+    private val showOwnerActions: Boolean = false
 ) : RecyclerView.Adapter<VehicleAdapter.VehicleViewHolder>() {
 
-    class VehicleViewHolder(
-        private val binding: ItemVehicleCardBinding,
-        private val onViewDetailsClick: (Vehicle) -> Unit,
-        private val onFavoriteClick: (Vehicle) -> Unit
+    companion object {
+        private val priceFormatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("en-PK"))
+    }
+
+    private var vehicles: List<Vehicle> = emptyList()
+
+    inner class VehicleViewHolder(
+        private val binding: ItemVehicleCardBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(vehicle: Vehicle) {
-            with(binding) {
-                // Set text fields
-                textTitle.text = vehicle.title
-                textMileage.text = vehicle.mileage
-                textLocation.text = vehicle.location
-                textFuel.text = vehicle.fuelType
-
-                // Format and set price
-                val priceFormat = NumberFormat.getCurrencyInstance(Locale("ur", "PK"))
-                textPrice.text = priceFormat.format(vehicle.price)
-
-                // Show/hide verified chip
-                chipVerified.visibility = if (vehicle.isVerified) {
-                    android.view.View.VISIBLE
-                } else {
-                    android.view.View.GONE
-                }
-
-                // Load image (using placeholder for now)
-                imageVehicle.setImageResource(R.drawable.ic_launcher_background)
-
-                // Set up click listeners
-                buttonViewDetails.setOnClickListener {
-                    onViewDetailsClick(vehicle)
-                }
-
-                iconFavorite.setOnClickListener {
-                    onFavoriteClick(vehicle)
-                }
+            binding.textTitle.text = vehicle.title
+            binding.textPrice.text = priceFormatter.format(vehicle.price)
+            binding.textCity.text = vehicle.city
+            binding.textYear.text = vehicle.year.toString()
+            
+            // Load image from URI or drawable
+            if (!vehicle.imageUri.isNullOrEmpty()) {
+                Glide.with(binding.imageVehicle.context)
+                    .load(vehicle.imageUri)
+                    .centerCrop()
+                    .into(binding.imageVehicle)
+            } else if (vehicle.image != 0) {
+                binding.imageVehicle.setImageResource(vehicle.image)
+            } else {
+                binding.imageVehicle.setImageResource(R.drawable.ic_car_rental)
             }
+
+            val favoriteTint = if (vehicle.isFavorite) R.color.primary else R.color.text_secondary
+            binding.iconFavorite.setColorFilter(ContextCompat.getColor(binding.root.context, favoriteTint))
+
+            binding.iconFavorite.setOnClickListener { onFavoriteClick(vehicle) }
+            binding.root.setOnClickListener { onItemClick(vehicle) }
+
+            binding.buttonEdit.visibility = if (showOwnerActions) View.VISIBLE else View.GONE
+            binding.buttonDelete.visibility = if (showOwnerActions) View.VISIBLE else View.GONE
+            binding.buttonEdit.setOnClickListener { onEditClick(vehicle) }
+            binding.buttonDelete.setOnClickListener { onDeleteClick(vehicle) }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VehicleViewHolder {
-        val binding = ItemVehicleCardBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return VehicleViewHolder(binding, onViewDetailsClick, onFavoriteClick)
+        val inflater = LayoutInflater.from(parent.context)
+        return VehicleViewHolder(ItemVehicleCardBinding.inflate(inflater, parent, false))
     }
 
     override fun onBindViewHolder(holder: VehicleViewHolder, position: Int) {
@@ -70,8 +73,8 @@ class VehicleAdapter(
 
     override fun getItemCount(): Int = vehicles.size
 
-    fun updateVehicles(newVehicles: List<Vehicle>) {
-        vehicles = newVehicles
+    fun submitList(items: List<Vehicle>) {
+        vehicles = items
         notifyDataSetChanged()
     }
 }

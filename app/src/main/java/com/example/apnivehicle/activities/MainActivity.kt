@@ -1,139 +1,118 @@
 package com.example.apnivehicle.activities
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import android.view.MenuItem
+import androidx.appcompat.widget.SearchView
+import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
 import com.example.apnivehicle.R
-import com.example.apnivehicle.adapters.VehicleAdapter
 import com.example.apnivehicle.databinding.ActivityHomeBinding
-import com.example.apnivehicle.repository.VehicleRepository
-import com.google.android.material.chip.Chip
+import com.example.apnivehicle.fragments.AddVehicleFragment
+import com.example.apnivehicle.fragments.FavoriteFragment
+import com.example.apnivehicle.fragments.HomeFragment
+import com.example.apnivehicle.fragments.MyAdsFragment
+import com.example.apnivehicle.fragments.SearchFragment
+import com.example.apnivehicle.fragments.SettingsFragment
+import com.example.apnivehicle.utils.ToolbarActionHandler
+import com.google.android.material.navigation.NavigationBarView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+
     private lateinit var binding: ActivityHomeBinding
-    private val repository = VehicleRepository()
-    private lateinit var featuredAdapter: VehicleAdapter
-    private lateinit var recentAdapter: VehicleAdapter
-    private var selectedCategory = "cars"
+    private val destinations: Map<Int, Pair<() -> Fragment, Int>> = mapOf(
+        R.id.nav_home to ( { HomeFragment() } to R.string.nav_home ),
+        R.id.nav_used_cars to ( { SearchFragment() } to R.string.nav_used_cars ),
+        R.id.nav_new_cars to ( { AddVehicleFragment() } to R.string.nav_new_cars ),
+        R.id.nav_bikes to ( { MyAdsFragment() } to R.string.nav_bikes ),
+        R.id.nav_more to ( { SettingsFragment() } to R.string.nav_more )
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
-        enableEdgeToEdge()
         setContentView(binding.root)
+
+        requestNotificationPermissionIfNeeded()
+        setSupportActionBar(binding.toolbarHome)
+
+        binding.bottomNavigation.setOnItemSelectedListener(this)
         
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.home_root)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        setupAdapters()
-        setupRecyclerViews()
-        setupCategoryChips()
-        setupBottomNavigation()
-        setupFAB()
-        loadVehicles()
-    }
-
-    private fun setupAdapters() {
-        featuredAdapter = VehicleAdapter(
-            onViewDetailsClick = { vehicle ->
-                Toast.makeText(this, "View ${vehicle.title} details", Toast.LENGTH_SHORT).show()
-            },
-            onFavoriteClick = { vehicle ->
-                Toast.makeText(this, "Added ${vehicle.title} to favorites", Toast.LENGTH_SHORT).show()
-            }
-        )
-
-        recentAdapter = VehicleAdapter(
-            onViewDetailsClick = { vehicle ->
-                Toast.makeText(this, "View ${vehicle.title} details", Toast.LENGTH_SHORT).show()
-            },
-            onFavoriteClick = { vehicle ->
-                Toast.makeText(this, "Added ${vehicle.title} to favorites", Toast.LENGTH_SHORT).show()
-            }
-        )
-    }
-
-    private fun setupRecyclerViews() {
-        binding.recyclerFeatured.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = featuredAdapter
-        }
-
-        binding.recyclerRecent.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = recentAdapter
-        }
-    }
-
-    private fun setupCategoryChips() {
-        // Set cars as default selected
-        binding.chipCategoryCars.isChecked = true
-
-        // Set up chip change listeners
-        listOf(
-            binding.chipCategoryCars to "cars",
-            binding.chipCategoryBikes to "bikes",
-            binding.chipCategoryTrucks to "trucks",
-            binding.chipCategoryParts to "parts",
-            binding.chipCategoryAccessories to "accessories"
-        ).forEach { (chip, category) ->
-            chip.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    selectedCategory = category
-                    // Filter vehicles by category (in a real app)
-                    // For now, just show the same data
-                    Toast.makeText(this, "Category: $category", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    private fun setupBottomNavigation() {
-        binding.bottomNavigation.setOnItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_home -> {
-                    Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.nav_used_cars -> {
-                    Toast.makeText(this, "Used Cars", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.nav_new_cars -> {
-                    Toast.makeText(this, "New Cars", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.nav_bikes -> {
-                    Toast.makeText(this, "Bikes", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                R.id.nav_more -> {
-                    Toast.makeText(this, "More", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun setupFAB() {
         binding.fabPostAd.setOnClickListener {
-            Toast.makeText(this, "Post New Ad", Toast.LENGTH_SHORT).show()
+            binding.bottomNavigation.selectedItemId = R.id.nav_new_cars
+        }
+
+        if (savedInstanceState == null) {
+            binding.bottomNavigation.selectedItemId = R.id.nav_home
+            openFragment(HomeFragment(), getString(R.string.nav_home))
         }
     }
 
-    private fun loadVehicles() {
-        val featured = repository.getFeaturedVehicles()
-        val recent = repository.getRecentlyAddedVehicles()
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                1001
+            )
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_toolbar, menu)
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as? SearchView
         
-        featuredAdapter.updateVehicles(featured)
-        recentAdapter.updateVehicles(recent)
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+            
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val activeFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+                val toolbarHandler = activeFragment as? ToolbarActionHandler
+                toolbarHandler?.onSearchQueryChanged(newText.orEmpty())
+                return true
+            }
+        })
+        
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val activeFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        val toolbarHandler = activeFragment as? ToolbarActionHandler
+
+        when (item.itemId) {
+            R.id.action_notifications -> showNotifications()
+            R.id.action_sort -> toolbarHandler?.onToolbarSort()
+            R.id.action_toggle_layout -> toolbarHandler?.onToolbarToggleLayout()
+            R.id.action_filter -> toolbarHandler?.onToolbarFilter()
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
+    }
+
+    private fun showNotifications() {
+        // TODO: Implement notifications
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        val destination = destinations[item.itemId] ?: return false
+        openFragment(destination.first.invoke(), getString(destination.second))
+        return true
+    }
+
+    private fun openFragment(fragment: Fragment, title: String) {
+        supportActionBar?.title = title
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 }

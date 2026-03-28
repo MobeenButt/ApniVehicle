@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Legacy -->
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-
     <!-- ApniVehicle Design System -->
     <color name="primary">#C0392B</color>
     <color name="primary_dark">#922B21</color>
     <color name="accent_cta">#E74C3C</color>
-
     <color name="background">#F5F5F5</color>
     <color name="surface_card">#FFFFFF</color>
-
     <color name="text_primary">#1A1A1A</color>
     <color name="text_secondary">#757575</color>
     <color name="divider">#E0E0E0</color>
-
     <color name="success">#27AE60</color>
     <color name="warning">#F39C12</color>
-
-    <!-- Component helpers -->
-    <color name="bottom_nav_item">@color/text_secondary</color>
+    <color name="bottom_nav_item_selected">@color/primary</color>
+    <color name="bottom_nav_item_unselected">@color/text_secondary</color>
+    <color name="button_text_white">#FFFFFF</color>
 </resources>
