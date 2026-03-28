@@ -2,8 +2,6 @@ package com.example.apnivehicle.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,14 +48,6 @@ class SearchFragment : Fragment(), ToolbarActionHandler {
         binding.recyclerSearch.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerSearch.adapter = adapter
 
-        binding.inputSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
-            override fun afterTextChanged(s: Editable?) {
-                query = s?.toString().orEmpty()
-                loadVehicles()
-            }
-        })
         loadVehicles()
     }
 
@@ -79,7 +69,12 @@ class SearchFragment : Fragment(), ToolbarActionHandler {
     }
 
     override fun onToolbarSearch() {
-        binding.inputSearch.requestFocus()
+        // No longer needed - search is now in toolbar
+    }
+
+    override fun onSearchQueryChanged(query: String) {
+        this.query = query
+        loadVehicles()
     }
 
     override fun onToolbarSort() {

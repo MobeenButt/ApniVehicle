@@ -25,6 +25,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
     private var isGridLayout = false
     private var sortOption = VehicleRepository.SortOption.LATEST
     private var filterValues: VehicleDialogs.FilterValues? = null
+    private var searchQuery = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +52,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
         binding.recyclerVehicles.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerVehicles.adapter = adapter
 
+
         loadVehicles()
     }
 
@@ -61,6 +63,13 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
 
     private fun loadVehicles() {
         var vehicles = VehicleRepository.getVehicles()
+        
+        // Apply search filter
+        if (searchQuery.isNotEmpty()) {
+            vehicles = VehicleRepository.searchVehicles(searchQuery, vehicles)
+        }
+        
+        // Apply other filters
         filterValues?.let { values ->
             vehicles = VehicleRepository.filterVehicles(
                 city = values.city,
@@ -77,7 +86,12 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
     }
 
     override fun onToolbarSearch() {
-        // Home screen does not have inline search; user can switch to Search from drawer.
+        // No longer needed - search is now in toolbar
+    }
+
+    override fun onSearchQueryChanged(query: String) {
+        searchQuery = query
+        loadVehicles()
     }
 
     override fun onToolbarSort() {

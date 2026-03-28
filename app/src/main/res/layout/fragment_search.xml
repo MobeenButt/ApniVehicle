@@ -6,17 +6,6 @@
     android:orientation="vertical"
     android:padding="12dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/input_search"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/action_search" />
-    </com.google.android.material.textfield.TextInputLayout>
-
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_search"

@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.ItemVehicleCardBinding
 import com.example.apnivehicle.models.Vehicle
@@ -34,7 +36,18 @@ class VehicleAdapter(
             binding.textPrice.text = priceFormatter.format(vehicle.price)
             binding.textCity.text = vehicle.city
             binding.textYear.text = vehicle.year.toString()
-            binding.imageVehicle.setImageResource(vehicle.image)
+            
+            // Load image from URI or drawable
+            if (!vehicle.imageUri.isNullOrEmpty()) {
+                Glide.with(binding.imageVehicle.context)
+                    .load(vehicle.imageUri)
+                    .centerCrop()
+                    .into(binding.imageVehicle)
+            } else if (vehicle.image != 0) {
+                binding.imageVehicle.setImageResource(vehicle.image)
+            } else {
+                binding.imageVehicle.setImageResource(R.drawable.ic_car_rental)
+            }
 
             val favoriteTint = if (vehicle.isFavorite) R.color.primary else R.color.text_secondary
             binding.iconFavorite.setColorFilter(ContextCompat.getColor(binding.root.context, favoriteTint))

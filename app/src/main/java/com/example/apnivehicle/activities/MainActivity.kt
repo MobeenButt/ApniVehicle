@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -64,6 +65,22 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar, menu)
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem?.actionView as? SearchView
+        
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+            
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val activeFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+                val toolbarHandler = activeFragment as? ToolbarActionHandler
+                toolbarHandler?.onSearchQueryChanged(newText.orEmpty())
+                return true
+            }
+        })
+        
         return true
     }
 
@@ -72,7 +89,6 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         val toolbarHandler = activeFragment as? ToolbarActionHandler
 
         when (item.itemId) {
-            R.id.action_search -> toolbarHandler?.onToolbarSearch()
             R.id.action_notifications -> showNotifications()
             R.id.action_sort -> toolbarHandler?.onToolbarSort()
             R.id.action_toggle_layout -> toolbarHandler?.onToolbarToggleLayout()

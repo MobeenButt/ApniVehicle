@@ -72,10 +72,10 @@ object VehicleRepository {
         return vehicle
     }
 
-    fun searchVehicles(query: String): List<Vehicle> {
+    fun searchVehicles(query: String, source: List<Vehicle> = vehicles): List<Vehicle> {
         val normalizedQuery = query.trim().lowercase()
-        if (normalizedQuery.isEmpty()) return getVehicles()
-        return vehicles.filter {
+        if (normalizedQuery.isEmpty()) return source
+        return source.filter {
             it.title.lowercase().contains(normalizedQuery) ||
                 it.city.lowercase().contains(normalizedQuery) ||
                 it.brand.lowercase().contains(normalizedQuery)
