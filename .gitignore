@@ -1,0 +1,101 @@
+# =========================
+# Android / Gradle
+# =========================
+.gradle/
+build/
+*/build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# =========================
+# Local config (SDK path etc)
+# =========================
+local.properties
+
+# =========================
+# Android Studio
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# =========================
+# Generated files
+# =========================
+captures/
+.externalNativeBuild/
+.cxx/
+
+# =========================
+# APK / AAB
+# =========================
+*.apk
+*.aab
+*.ap_
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Mac
+# =========================
+.DS_Store
+
+# =========================
+# Windows
+# =========================
+Thumbs.db
+desktop.ini
+
+# =========================
+# Kotlin
+# =========================
+.kotlin/
+kotlin-tooling-metadata.json
+
+# =========================
+# NDK
+# =========================
+obj/
+lib/
+
+# =========================
+# Firebase / Google Services (optional)
+# =========================
+google-services.json
+
+# =========================
+# Keystore (IMPORTANT)
+# =========================
+*.jks
+*.keystore
+
+# =========================
+# Navigation SafeArgs
+# =========================
+.navigation/
+
+# =========================
+# Room database schema
+# =========================
+schemas/
+
+# =========================
+# Android Studio caches
+# =========================
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# =========================
+# Gradle cache
+# =========================
+.gradle/*
+!.gradle/wrapper
+!.gradle/wrapper/gradle-wrapper.properties
