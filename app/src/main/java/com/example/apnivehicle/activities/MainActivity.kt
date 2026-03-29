@@ -12,11 +12,14 @@ import androidx.fragment.app.Fragment
 import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.ActivityHomeBinding
 import com.example.apnivehicle.fragments.AddVehicleFragment
+import com.example.apnivehicle.fragments.AdvancedSearchFragment
+import com.example.apnivehicle.fragments.ComparisonFragment
 import com.example.apnivehicle.fragments.FavoriteFragment
 import com.example.apnivehicle.fragments.HomeFragment
 import com.example.apnivehicle.fragments.MyAdsFragment
 import com.example.apnivehicle.fragments.SearchFragment
 import com.example.apnivehicle.fragments.SettingsFragment
+import com.example.apnivehicle.fragments.UserProfileFragment
 import com.example.apnivehicle.utils.ToolbarActionHandler
 import com.google.android.material.navigation.NavigationBarView
 
@@ -93,6 +96,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             R.id.action_sort -> toolbarHandler?.onToolbarSort()
             R.id.action_toggle_layout -> toolbarHandler?.onToolbarToggleLayout()
             R.id.action_filter -> toolbarHandler?.onToolbarFilter()
+            R.id.action_advanced_search -> openFragment(AdvancedSearchFragment(), "Advanced Search")
+            R.id.action_user_profile -> openFragment(UserProfileFragment(), "My Profile")
+            R.id.action_comparison -> openFragment(ComparisonFragment(), "Compare Vehicles")
             else -> return super.onOptionsItemSelected(item)
         }
         return true

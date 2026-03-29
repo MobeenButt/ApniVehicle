@@ -33,4 +33,17 @@
         android:title="@string/action_filter"
         app:showAsAction="ifRoom" />
 
-</menu>
+    <item
+        android:id="@+id/action_advanced_search"
+        android:title="Advanced Search"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_user_profile"
+        android:title="My Profile"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_comparison"
+        android:title="Compare"
+        app:showAsAction="never" /></menu>

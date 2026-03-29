@@ -18,32 +18,40 @@
             android:id="@+id/chip_group_categories"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:singleSelection="true"
+            app:selectionRequired="true"
             app:singleLine="true">
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="All"
+                android:checked="true"
                 style="@style/Widget.Material3.Chip.Filter" />
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_cars"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cars"
                 style="@style/Widget.Material3.Chip.Filter" />
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_bikes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Bikes"
                 style="@style/Widget.Material3.Chip.Filter" />
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_trucks"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Trucks"
                 style="@style/Widget.Material3.Chip.Filter" />
             <com.google.android.material.chip.Chip
+                android:id="@+id/chip_vans"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Parts"
+                android:text="Vans"
                 style="@style/Widget.Material3.Chip.Filter" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -67,4 +75,3 @@
         android:visibility="gone" />
 
 </LinearLayout>
-
