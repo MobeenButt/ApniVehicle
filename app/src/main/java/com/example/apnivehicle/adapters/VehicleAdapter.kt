@@ -77,4 +77,9 @@ class VehicleAdapter(
         vehicles = items
         notifyDataSetChanged()
     }
+
+    fun updateList(items: List<Vehicle>) {
+        vehicles = items
+        notifyDataSetChanged()
+    }
 }
