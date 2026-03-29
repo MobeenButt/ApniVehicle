@@ -2,6 +2,7 @@ package com.example.apnivehicle.repository
 
 import com.example.apnivehicle.R
 import com.example.apnivehicle.models.Vehicle
+import com.example.apnivehicle.models.VehicleType
 
 object VehicleRepository {
     enum class SortOption {
@@ -14,34 +15,91 @@ object VehicleRepository {
 
     private val vehicles = arrayListOf(
         Vehicle(
-            title = "Toyota Corolla XLi",
-            price = 3200000,
+            title = "Toyota Corolla Altis 1.6",
+            price = 4500000,
             city = "Lahore",
-            year = 2019,
+            year = 2022,
+            type = VehicleType.CAR,
+            fuelType = "Petrol",
+            transmission = "Automatic",
+            engineCapacity = "1600 cc",
+            color = "White",
+            assembly = "Local",
+            mileage = 15000,
+            condition = "Like New",
+            sellerName = "Ahmed Ali",
+            sellerPhone = "03214567890",
+            isVerified = true,
+            inspectionScore = 9,
             image = R.drawable.ic_directions_car,
-            description = "Neat family sedan in excellent condition.",
+            description = "First hand, bumper to bumper original. Maintained from Toyota dealership. PakWheels Inspected.",
             isFavorite = false,
             isMyAd = false
         ),
         Vehicle(
-            title = "Honda Civic Oriel",
-            price = 4200000,
+            title = "Honda Civic RS",
+            price = 7500000,
             city = "Karachi",
-            year = 2021,
+            year = 2023,
+            type = VehicleType.CAR,
+            fuelType = "Petrol",
+            transmission = "Automatic",
+            engineCapacity = "1500 cc Turbo",
+            color = "Meteoroid Gray",
+            assembly = "Local",
+            mileage = 5000,
+            condition = "New",
+            sellerName = "Zain Mansoor",
+            sellerPhone = "03339876543",
+            isVerified = true,
+            inspectionScore = 10,
             image = R.drawable.ic_car_rental,
-            description = "Single owner, low mileage, complete documents.",
+            description = "Top of the line variant. Ceramic coated. Managed by ApniVehicle.",
             isFavorite = true,
             isMyAd = false
         ),
         Vehicle(
-            title = "Suzuki Alto VXR",
-            price = 1950000,
+            title = "Honda CD 70",
+            price = 150000,
             city = "Islamabad",
-            year = 2020,
-            image = R.drawable.ic_directions_car,
-            description = "Economical city car with chilled AC.",
+            year = 2023,
+            type = VehicleType.BIKE,
+            fuelType = "Petrol",
+            transmission = "Manual",
+            engineCapacity = "70 cc",
+            color = "Red",
+            assembly = "Local",
+            mileage = 2000,
+            condition = "Used",
+            sellerName = "Usman Khan",
+            sellerPhone = "03001122334",
+            isVerified = false,
+            image = R.drawable.ic_two_wheeler,
+            description = "Standard bike, very economical fuel average. Registered.",
             isFavorite = false,
             isMyAd = true
+        ),
+        Vehicle(
+            title = "Toyota Land Cruiser ZX",
+            price = 85000000,
+            city = "Islamabad",
+            year = 2022,
+            type = VehicleType.CAR,
+            fuelType = "Diesel",
+            transmission = "Automatic",
+            engineCapacity = "3300 cc",
+            color = "Black",
+            assembly = "Imported",
+            mileage = 12000,
+            condition = "Excellent",
+            sellerName = "Malik Sahab",
+            sellerPhone = "03210000000",
+            isVerified = true,
+            inspectionScore = 9,
+            image = R.drawable.ic_directions_car,
+            description = "Full option, Japanese import. 7 seater luxury SUV.",
+            isFavorite = false,
+            isMyAd = false
         )
     )
 
@@ -88,6 +146,7 @@ object VehicleRepository {
         maxPrice: Long? = null,
         brand: String? = null,
         year: Int? = null,
+        type: VehicleType? = null,
         source: List<Vehicle> = vehicles
     ): List<Vehicle> {
         return source.filter { vehicle ->
@@ -96,7 +155,8 @@ object VehicleRepository {
             val minMatches = minPrice == null || vehicle.price >= minPrice
             val maxMatches = maxPrice == null || vehicle.price <= maxPrice
             val yearMatches = year == null || vehicle.year == year
-            cityMatches && brandMatches && minMatches && maxMatches && yearMatches
+            val typeMatches = type == null || vehicle.type == type
+            cityMatches && brandMatches && minMatches && maxMatches && yearMatches && typeMatches
         }
     }
 

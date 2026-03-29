@@ -8,10 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.apnivehicle.R
 import com.example.apnivehicle.activities.DetailActivity
 import com.example.apnivehicle.adapters.VehicleAdapter
 import com.example.apnivehicle.databinding.FragmentHomeBinding
 import com.example.apnivehicle.dialogs.VehicleDialogs
+import com.example.apnivehicle.models.VehicleType
 import com.example.apnivehicle.repository.VehicleRepository
 import com.example.apnivehicle.utils.NotificationHelper
 import com.example.apnivehicle.utils.ToolbarActionHandler
@@ -25,6 +27,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
     private var isGridLayout = false
     private var sortOption = VehicleRepository.SortOption.LATEST
     private var filterValues: VehicleDialogs.FilterValues? = null
+    private var selectedCategory: VehicleType? = null
     private var searchQuery = ""
 
     override fun onCreateView(
@@ -52,8 +55,21 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
         binding.recyclerVehicles.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerVehicles.adapter = adapter
 
-
+        setupCategoryFilters()
         loadVehicles()
+    }
+
+    private fun setupCategoryFilters() {
+        binding.chipGroupCategories.setOnCheckedStateChangeListener { group, checkedIds ->
+            selectedCategory = when (checkedIds.firstOrNull()) {
+                R.id.chip_cars -> VehicleType.CAR
+                R.id.chip_bikes -> VehicleType.BIKE
+                R.id.chip_trucks -> VehicleType.TRUCK
+                R.id.chip_vans -> VehicleType.VAN
+                else -> null // "All" or nothing selected
+            }
+            loadVehicles()
+        }
     }
 
     override fun onResume() {
@@ -68,8 +84,13 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
         if (searchQuery.isNotEmpty()) {
             vehicles = VehicleRepository.searchVehicles(searchQuery, vehicles)
         }
+
+        // Apply Category filter from Chips
+        if (selectedCategory != null) {
+            vehicles = VehicleRepository.filterVehicles(type = selectedCategory, source = vehicles)
+        }
         
-        // Apply other filters
+        // Apply other filters from Dialog
         filterValues?.let { values ->
             vehicles = VehicleRepository.filterVehicles(
                 city = values.city,
@@ -122,4 +143,3 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
         _binding = null
     }
 }
-

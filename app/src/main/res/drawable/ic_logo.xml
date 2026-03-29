@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <path
+        android:pathData="M100,20 C55.82,20 20,55.82 20,100 C20,144.18 55.82,180 100,180 C144.18,180 180,144.18 180,100 C180,55.82 144.18,20 100,20 Z"
+        android:fillColor="#0D47A1"/>
+    <path
+        android:pathData="M50,110 L150,110 L140,85 C138,80 133,75 128,75 L72,75 C67,75 62,80 60,85 L50,110 Z"
+        android:fillColor="#FFFFFF"/>
+    <path
+        android:pathData="M45,110 L155,110 C158,110 160,112 160,115 L160,135 C160,138 158,140 155,140 L45,140 C42,140 40,138 40,135 L40,115 C40,112 42,110 45,110 Z"
+        android:fillColor="#FFFFFF"/>
+    <path
+        android:pathData="M60,140 L60,150 C60,153 62,155 65,155 L75,155 C78,155 80,153 80,150 L80,140 Z"
+        android:fillColor="#FFFFFF"/>
+    <path
+        android:pathData="M120,140 L120,150 C120,153 122,155 125,155 L135,155 C138,155 140,153 140,150 L140,140 Z"
+        android:fillColor="#FFFFFF"/>
+    <path
+        android:pathData="M55,120 L75,120 L75,130 L55,130 Z"
+        android:fillColor="#FFD600"/>
+    <path
+        android:pathData="M125,120 L145,120 L145,130 L125,130 Z"
+        android:fillColor="#FFD600"/>
+</vector>
