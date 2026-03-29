@@ -12,6 +12,7 @@ data class Vehicle(
     var imageUri: String? = null,  // URI for custom images
     var imageList: MutableList<String> = mutableListOf(),  // Multiple images URIs
     var description: String,
+    var type: VehicleType = VehicleType.CAR,  // Vehicle type
     var isFavorite: Boolean = false,
     var isMyAd: Boolean = false,
     var sellerId: String = "",  // Link to seller

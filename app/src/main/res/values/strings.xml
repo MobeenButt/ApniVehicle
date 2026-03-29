@@ -63,4 +63,9 @@
     <string name="category_trucks">Trucks</string>
     <string name="category_parts">Parts</string>
     <string name="category_accessories">Accessories</string>
+
+    <!-- Detail Activity -->
+    <string name="location_format">Location: %s</string>
+    <string name="contacting_seller_message">Contacting seller for %s</string>
+    <string name="calling_seller_message">Calling seller for %s</string>
 </resources>

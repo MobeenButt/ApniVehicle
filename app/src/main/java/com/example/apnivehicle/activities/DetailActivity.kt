@@ -1,8 +1,10 @@
 package com.example.apnivehicle.activities
 
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.ActivityDetailBinding
 import com.example.apnivehicle.repository.VehicleRepository
@@ -39,10 +41,11 @@ class DetailActivity : AppCompatActivity() {
 
     private fun setupVehicleDetails(vehicle: com.example.apnivehicle.models.Vehicle) {
         binding.apply {
-            if (!vehicle.imageUri.isNullOrEmpty()) {
+            val uri = vehicle.imageUri // Avoid smart cast issue with mutable property
+            if (!uri.isNullOrEmpty()) {
                 try {
-                    imageVehicle.setImageURI(android.net.Uri.parse(vehicle.imageUri))
-                } catch (e: Exception) {
+                    imageVehicle.setImageURI(uri.toUri())
+                } catch (_: Exception) {
                     if (vehicle.image != 0) {
                         imageVehicle.setImageResource(vehicle.image)
                     } else {
@@ -58,43 +61,27 @@ class DetailActivity : AppCompatActivity() {
             textTitle.text = vehicle.title
             textPrice.text = priceFormatter.format(vehicle.price)
             textDescription.text = vehicle.description
-            textCity.text = "Location: ${vehicle.city}"
-            textYear.text = "Year: ${vehicle.year} | Brand: ${vehicle.brand} | Model: ${vehicle.model}"
+            textCity.text = getString(R.string.location_format, vehicle.city)
+            quickYear.text = vehicle.year.toString()
         }
     }
 
     private fun setupButtons(vehicle: com.example.apnivehicle.models.Vehicle) {
         binding.apply {
-            buttonContact.setOnClickListener {
+            btnChat.setOnClickListener {
                 Toast.makeText(
                     this@DetailActivity,
-                    "Contacting seller for ${vehicle.title}",
+                    getString(R.string.contacting_seller_message, vehicle.title),
                     Toast.LENGTH_SHORT
                 ).show()
             }
 
-            buttonFavorite.apply {
-                text = if (vehicle.isFavorite) "★ Saved" else "☆ Save"
-                setOnClickListener {
-                    VehicleRepository.toggleFavorite(vehicle.id)?.let {
-                        if (it.isFavorite) {
-                            NotificationHelper(this@DetailActivity).showFavoriteAdded(it.title)
-                            buttonFavorite.text = "★ Saved"
-                            Toast.makeText(
-                                this@DetailActivity,
-                                "Added to favorites",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            buttonFavorite.text = "☆ Save"
-                            Toast.makeText(
-                                this@DetailActivity,
-                                "Removed from favorites",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
+            btnCall.setOnClickListener {
+                Toast.makeText(
+                    this@DetailActivity,
+                    getString(R.string.calling_seller_message, vehicle.title),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
