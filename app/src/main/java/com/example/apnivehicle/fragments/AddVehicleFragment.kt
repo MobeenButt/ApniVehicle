@@ -58,12 +58,12 @@ class AddVehicleFragment : Fragment() {
     private fun setupDropdowns() {
         // Vehicle Types
         val types = VehicleType.values().map { it.name }
-        val typeAdapter = ArrayAdapter(requireContext(), R.layout.list_item, types)
+        val typeAdapter: ArrayAdapter<String> = ArrayAdapter(requireContext(), R.layout.list_item, types)
         binding.spinnerType.setAdapter(typeAdapter)
 
         // Fuel Types
         val fuelTypes = listOf("Petrol", "Diesel", "CNG", "Hybrid", "Electric")
-        val fuelAdapter = ArrayAdapter(requireContext(), R.layout.list_item, fuelTypes)
+        val fuelAdapter: ArrayAdapter<String> = ArrayAdapter(requireContext(), R.layout.list_item, fuelTypes)
         binding.spinnerFuel.setAdapter(fuelAdapter)
     }
 
@@ -82,7 +82,7 @@ class AddVehicleFragment : Fragment() {
             return
         }
 
-        val type = try { VehicleType.valueOf(typeStr) } catch (e: Exception) { VehicleType.CAR }
+        val type = try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
 
         val vehicle = Vehicle(
             title = title,

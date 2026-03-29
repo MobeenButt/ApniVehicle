@@ -63,7 +63,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
         binding.chipGroupCategories.setOnCheckedStateChangeListener { group, checkedIds ->
             selectedCategory = when (checkedIds.firstOrNull()) {
                 R.id.chip_cars -> VehicleType.CAR
-                R.id.chip_bikes -> VehicleType.BIKE
+                R.id.chip_bikes -> VehicleType.MOTORCYCLE
                 R.id.chip_trucks -> VehicleType.TRUCK
                 R.id.chip_vans -> VehicleType.VAN
                 else -> null // "All" or nothing selected
@@ -87,7 +87,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
 
         // Apply Category filter from Chips
         if (selectedCategory != null) {
-            vehicles = VehicleRepository.filterVehicles(type = selectedCategory, source = vehicles)
+            vehicles = vehicles.filter { it.type == selectedCategory }
         }
         
         // Apply other filters from Dialog
