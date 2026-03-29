@@ -1,8 +1,10 @@
 package com.example.apnivehicle.repository
 
 import com.example.apnivehicle.R
+import com.example.apnivehicle.models.PriceRecord
+import com.example.apnivehicle.models.SearchHistory
+import com.example.apnivehicle.models.SearchPreference
 import com.example.apnivehicle.models.Vehicle
-import com.example.apnivehicle.models.VehicleType
 
 object VehicleRepository {
     enum class SortOption {
@@ -15,94 +17,78 @@ object VehicleRepository {
 
     private val vehicles = arrayListOf(
         Vehicle(
-            title = "Toyota Corolla Altis 1.6",
-            price = 4500000,
+            title = "Toyota Corolla XLi",
+            price = 3200000,
             city = "Lahore",
-            year = 2022,
-            type = VehicleType.CAR,
-            fuelType = "Petrol",
-            transmission = "Automatic",
-            engineCapacity = "1600 cc",
-            color = "White",
-            assembly = "Local",
-            mileage = 15000,
-            condition = "Like New",
-            sellerName = "Ahmed Ali",
-            sellerPhone = "03214567890",
-            isVerified = true,
-            inspectionScore = 9,
+            year = 2019,
             image = R.drawable.ic_directions_car,
-            description = "First hand, bumper to bumper original. Maintained from Toyota dealership. PakWheels Inspected.",
-            isFavorite = false,
-            isMyAd = false
-        ),
-        Vehicle(
-            title = "Honda Civic RS",
-            price = 7500000,
-            city = "Karachi",
-            year = 2023,
-            type = VehicleType.CAR,
-            fuelType = "Petrol",
-            transmission = "Automatic",
-            engineCapacity = "1500 cc Turbo",
-            color = "Meteoroid Gray",
-            assembly = "Local",
-            mileage = 5000,
-            condition = "New",
-            sellerName = "Zain Mansoor",
-            sellerPhone = "03339876543",
-            isVerified = true,
-            inspectionScore = 10,
-            image = R.drawable.ic_car_rental,
-            description = "Top of the line variant. Ceramic coated. Managed by ApniVehicle.",
-            isFavorite = true,
-            isMyAd = false
-        ),
-        Vehicle(
-            title = "Honda CD 70",
-            price = 150000,
-            city = "Islamabad",
-            year = 2023,
-            type = VehicleType.BIKE,
-            fuelType = "Petrol",
+            description = "Neat family sedan in excellent condition.",
+            brand = "Toyota",
+            model = "Corolla",
+            mileage = 45000,
             transmission = "Manual",
-            engineCapacity = "70 cc",
-            color = "Red",
-            assembly = "Local",
-            mileage = 2000,
+            fuelType = "Petrol",
             condition = "Used",
-            sellerName = "Usman Khan",
-            sellerPhone = "03001122334",
-            isVerified = false,
-            image = R.drawable.ic_two_wheeler,
-            description = "Standard bike, very economical fuel average. Registered.",
-            isFavorite = false,
-            isMyAd = true
+            sellerRating = 4.8f,
+            sellerReviewCount = 12
         ),
         Vehicle(
-            title = "Toyota Land Cruiser ZX",
-            price = 85000000,
-            city = "Islamabad",
-            year = 2022,
-            type = VehicleType.CAR,
-            fuelType = "Diesel",
+            title = "Honda Civic Oriel",
+            price = 4200000,
+            city = "Karachi",
+            year = 2021,
+            image = R.drawable.ic_car_rental,
+            description = "Single owner, low mileage, complete documents.",
+            brand = "Honda",
+            model = "Civic",
+            mileage = 25000,
             transmission = "Automatic",
-            engineCapacity = "3300 cc",
-            color = "Black",
-            assembly = "Imported",
-            mileage = 12000,
-            condition = "Excellent",
-            sellerName = "Malik Sahab",
-            sellerPhone = "03210000000",
-            isVerified = true,
-            inspectionScore = 9,
+            fuelType = "Petrol",
+            condition = "Used",
+            sellerRating = 5f,
+            sellerReviewCount = 28,
+            isFavorite = true
+        ),
+        Vehicle(
+            title = "Suzuki Alto VXR",
+            price = 1950000,
+            city = "Islamabad",
+            year = 2020,
             image = R.drawable.ic_directions_car,
-            description = "Full option, Japanese import. 7 seater luxury SUV.",
-            isFavorite = false,
-            isMyAd = false
+            description = "Economical city car with chilled AC.",
+            brand = "Suzuki",
+            model = "Alto",
+            mileage = 35000,
+            transmission = "Manual",
+            fuelType = "Petrol",
+            condition = "Used",
+            isMyAd = true,
+            sellerRating = 4.5f,
+            sellerReviewCount = 8
+        ),
+        Vehicle(
+            title = "Hyundai Elantra",
+            price = 3800000,
+            city = "Lahore",
+            year = 2020,
+            image = R.drawable.ic_directions_car,
+            description = "Imported model with sunroof.",
+            brand = "Hyundai",
+            model = "Elantra",
+            mileage = 52000,
+            transmission = "Automatic",
+            fuelType = "Petrol",
+            condition = "Used",
+            sellerRating = 4.7f,
+            sellerReviewCount = 15
         )
     )
 
+    private val searchPreferences = mutableListOf<SearchPreference>()
+    private val searchHistory = mutableListOf<SearchHistory>()
+    private val wishlistComparisons = mutableListOf<List<String>>()  // Store vehicle IDs for comparison
+
+    // ===== Basic Operations =====
     fun addVehicle(vehicle: Vehicle) {
         vehicles.add(0, vehicle)
     }
@@ -120,6 +106,8 @@ object VehicleRepository {
 
     fun getVehicles(): List<Vehicle> = vehicles.toList()
 
+    fun getVehicleById(vehicleId: String): Vehicle? = vehicles.find { it.id == vehicleId }
+
     fun getFavorites(): List<Vehicle> = vehicles.filter { it.isFavorite }
 
     fun getMyAds(): List<Vehicle> = vehicles.filter { it.isMyAd }
@@ -130,14 +118,67 @@ object VehicleRepository {
         return vehicle
     }
 
+    fun incrementViewCount(vehicleId: String) {
+        vehicles.find { it.id == vehicleId }?.viewCount?.let {
+            vehicles.find { it.id == vehicleId }?.viewCount = it + 1
+        }
+    }
+
+    // ===== Search & Filter =====
     fun searchVehicles(query: String, source: List<Vehicle> = vehicles): List<Vehicle> {
         val normalizedQuery = query.trim().lowercase()
+        if (normalizedQuery.isNotEmpty()) {
+            addSearchHistory(query)
+        }
         if (normalizedQuery.isEmpty()) return source
         return source.filter {
             it.title.lowercase().contains(normalizedQuery) ||
                 it.city.lowercase().contains(normalizedQuery) ||
-                it.brand.lowercase().contains(normalizedQuery)
+                it.brand.lowercase().contains(normalizedQuery) ||
+                it.model.lowercase().contains(normalizedQuery)
         }
+    }
+
+    fun advancedSearch(
+        query: String = "",
+        brand: String? = null,
+        model: String? = null,
+        minPrice: Long? = null,
+        maxPrice: Long? = null,
+        minMileage: Int? = null,
+        maxMileage: Int? = null,
+        transmission: String? = null,
+        fuelType: String? = null,
+        condition: String? = null,
+        city: String? = null,
+        source: List<Vehicle> = vehicles
+    ): List<Vehicle> {
+        var result = source
+
+        // Text search first
+        if (query.isNotBlank()) {
+            result = searchVehicles(query, result)
+        }
+
+        // Then apply filters
+        result = result.filter { vehicle ->
+            val brandMatches = brand.isNullOrBlank() || vehicle.brand.equals(brand, ignoreCase = true)
+            val modelMatches = model.isNullOrBlank() || vehicle.model.equals(model, ignoreCase = true)
+            val minPriceMatches = minPrice == null || vehicle.price >= minPrice
+            val maxPriceMatches = maxPrice == null || vehicle.price <= maxPrice
+            val minMileageMatches = minMileage == null || vehicle.mileage >= minMileage
+            val maxMileageMatches = maxMileage == null || vehicle.mileage <= maxMileage
+            val transmissionMatches = transmission.isNullOrBlank() || vehicle.transmission.equals(transmission, ignoreCase = true)
+            val fuelMatches = fuelType.isNullOrBlank() || vehicle.fuelType.equals(fuelType, ignoreCase = true)
+            val conditionMatches = condition.isNullOrBlank() || vehicle.condition.equals(condition, ignoreCase = true)
+            val cityMatches = city.isNullOrBlank() || vehicle.city.equals(city, ignoreCase = true)
+
+            brandMatches && modelMatches && minPriceMatches && maxPriceMatches &&
+                minMileageMatches && maxMileageMatches && transmissionMatches &&
+                fuelMatches && conditionMatches && cityMatches
+        }
+
+        return result
     }
 
     fun filterVehicles(
@@ -146,7 +187,6 @@ object VehicleRepository {
         maxPrice: Long? = null,
         brand: String? = null,
         year: Int? = null,
-        type: VehicleType? = null,
         source: List<Vehicle> = vehicles
     ): List<Vehicle> {
         return source.filter { vehicle ->
@@ -155,11 +195,11 @@ object VehicleRepository {
             val minMatches = minPrice == null || vehicle.price >= minPrice
             val maxMatches = maxPrice == null || vehicle.price <= maxPrice
             val yearMatches = year == null || vehicle.year == year
-            val typeMatches = type == null || vehicle.type == type
-            cityMatches && brandMatches && minMatches && maxMatches && yearMatches && typeMatches
+            cityMatches && brandMatches && minMatches && maxMatches && yearMatches
         }
     }
 
+    // ===== Sorting =====
     fun sortVehicles(
         sortOption: SortOption,
         source: List<Vehicle> = vehicles
@@ -172,4 +212,123 @@ object VehicleRepository {
             SortOption.OLDEST -> source.sortedBy { it.createdAt }
         }
     }
+
+    // ===== Search Preferences =====
+    fun saveSearchPreference(preference: SearchPreference): Boolean {
+        return searchPreferences.add(preference)
+    }
+
+    fun getSearchPreferences(): List<SearchPreference> = searchPreferences.toList()
+
+    fun deleteSearchPreference(preferenceId: String): Boolean {
+        return searchPreferences.removeAll { it.id == preferenceId }
+    }
+
+    fun applySearchPreference(preference: SearchPreference): List<Vehicle> {
+        return advancedSearch(
+            brand = if (preference.brand.isNotEmpty()) preference.brand else null,
+            model = if (preference.model.isNotEmpty()) preference.model else null,
+            minPrice = if (preference.minPrice > 0) preference.minPrice else null,
+            maxPrice = if (preference.maxPrice < 10000000L) preference.maxPrice else null,
+            minMileage = if (preference.minMileage > 0) preference.minMileage else null,
+            maxMileage = if (preference.maxMileage < 500000) preference.maxMileage else null,
+            transmission = if (preference.transmission.isNotEmpty()) preference.transmission else null,
+            fuelType = if (preference.fuelType.isNotEmpty()) preference.fuelType else null,
+            condition = if (preference.condition.isNotEmpty()) preference.condition else null,
+            city = if (preference.city.isNotEmpty()) preference.city else null
+        )
+    }
+
+    // ===== Search History =====
+    fun addSearchHistory(query: String) {
+        if (query.isNotBlank()) {
+            searchHistory.add(0, SearchHistory(query))
+            // Keep only last 20 searches
+            if (searchHistory.size > 20) {
+                searchHistory.removeAt(searchHistory.size - 1)
+            }
+        }
+    }
+
+    fun getSearchHistory(): List<SearchHistory> = searchHistory.toList()
+
+    fun clearSearchHistory() {
+        searchHistory.clear()
+    }
+
+    // ===== Wishlist Comparison =====
+    fun getComparisonVehicles(vehicleIds: List<String>): List<Vehicle> {
+        return vehicles.filter { it.id in vehicleIds }
+    }
+
+    fun saveComparison(vehicleIds: List<String>) {
+        if (vehicleIds.isNotEmpty() && vehicleIds.size <= 3) {
+            wishlistComparisons.add(vehicleIds)
+        }
+    }
+
+    fun getSavedComparisons(): List<List<String>> = wishlistComparisons.toList()
+
+    fun deleteComparison(index: Int) {
+        if (index in wishlistComparisons.indices) {
+            wishlistComparisons.removeAt(index)
+        }
+    }
+
+    // ===== Price Tracking =====
+    fun recordPriceChange(vehicleId: String, newPrice: Long) {
+        vehicles.find { it.id == vehicleId }?.apply {
+            priceHistory.add(PriceRecord(newPrice))
+            price = newPrice
+        }
+    }
+
+    fun getPriceHistory(vehicleId: String): List<PriceRecord> {
+        return vehicles.find { it.id == vehicleId }?.priceHistory ?: emptyList()
+    }
+
+    // ===== Utility Functions =====
+    fun getUniqueBrands(): List<String> {
+        return vehicles.map { it.brand }.distinct().sorted()
+    }
+
+    fun getUniqueModels(brand: String): List<String> {
+        return vehicles.filter { it.brand.equals(brand, ignoreCase = true) }
+            .map { it.model }
+            .distinct()
+            .sorted()
+    }
+
+    fun getUniqueCities(): List<String> {
+        return vehicles.map { it.city }.distinct().sorted()
+    }
+
+    fun getUniqueFuelTypes(): List<String> {
+        return vehicles.map { it.fuelType }.distinct().sorted()
+    }
+
+    fun getUniqueTransmissions(): List<String> {
+        return vehicles.map { it.transmission }.distinct().sorted()
+    }
+
+    fun getUniqueConditions(): List<String> {
+        return vehicles.map { it.condition }.distinct().sorted()
+    }
+
+    fun getPriceRange(): Pair<Long, Long> {
+        return if (vehicles.isEmpty()) {
+            0L to 10000000L
+        } else {
+            vehicles.minOf { it.price } to vehicles.maxOf { it.price }
+        }
+    }
+
+    fun getMileageRange(): Pair<Int, Int> {
+        return if (vehicles.isEmpty()) {
+            0 to 500000
+        } else {
+            vehicles.minOf { it.mileage } to vehicles.maxOf { it.mileage }
+        }
+    }
 }
+
