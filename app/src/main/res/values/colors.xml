@@ -1,17 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ApniVehicle Design System -->
-    <color name="primary">#C0392B</color>
-    <color name="primary_dark">#922B21</color>
-    <color name="accent_cta">#E74C3C</color>
+    <!-- ApniVehicle Professional Design System -->
+    <!-- Primary Colors -->
+    <color name="primary">#1E88E5</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="accent_cta">#FF6F00</color>
+    
+    <!-- Light Theme -->
     <color name="background">#F5F5F5</color>
     <color name="surface_card">#FFFFFF</color>
-    <color name="text_primary">#1A1A1A</color>
+    <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
-    <color name="divider">#E0E0E0</color>
-    <color name="success">#27AE60</color>
+    
+    <!-- Dark Theme -->
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="text_primary_dark">#E0E0E0</color>
+    <color name="text_secondary_dark">#9E9E9E</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="error">#F44336</color>
     <color name="warning">#F39C12</color>
+    
+    <!-- UI Elements -->
+    <color name="divider">#E0E0E0</color>
     <color name="bottom_nav_item_selected">@color/primary</color>
     <color name="bottom_nav_item_unselected">@color/text_secondary</color>
     <color name="button_text_white">#FFFFFF</color>
+    
+    <!-- Price Color -->
+    <color name="price_green">#27AE60</color>
 </resources>

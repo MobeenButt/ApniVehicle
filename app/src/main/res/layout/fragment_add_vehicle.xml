@@ -3,37 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/spacing_md">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Post Your Ad"
-            android:textSize="24sp"
+            android:textSize="@dimen/text_size_h1"
             android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_md" />
 
         <!-- Image Picker Section -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/colorOutline">
+            android:layout_marginBottom="@dimen/spacing_md"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/elevation_card">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="@dimen/spacing_md">
 
                 <ImageView
                     android:id="@+id/iv_vehicle_image"
@@ -43,14 +44,48 @@
                     android:src="@drawable/ic_car_rental"
                     android:contentDescription="Vehicle Image" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_select_image"
+                <TextView
+                    android:id="@+id/text_image_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Upload Photos"
-                    app:icon="@drawable/ic_add"
-                    style="@style/Widget.Material3.Button.TonalButton" />
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="0 images selected"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textColor="@color/text_secondary"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginTop="@dimen/spacing_sm">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_select_image"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Upload Photos"
+                        app:icon="@drawable/ic_add"
+                        style="@style/Widget.Material3.Button.TonalButton" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_clear_images"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:text="Clear"
+                        android:visibility="gone"
+                        style="@style/Widget.Material3.Button.OutlinedButton" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:text="Add 1-8 images (Required)"
+                    android:textSize="@dimen/text_size_caption"
+                    android:textColor="@color/text_secondary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -61,7 +96,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Category">
+            android:hint="Category *">
 
             <AutoCompleteTextView
                 android:id="@+id/spinner_type"
@@ -72,91 +107,117 @@
 
         <!-- Title -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_title"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Ad Title">
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:hint="Ad Title *">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/input_title"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:maxLength="100" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Brand -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:hint="Brand *">
+
+            <AutoCompleteTextView
+                android:id="@+id/spinner_brand"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Price -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_price"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Price (Rs)">
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:hint="Price (PKR) *"
+            app:prefixText="Rs ">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/input_price"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="number"
+                android:maxLength="10" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/spacing_sm"
             android:orientation="horizontal">
 
             <!-- City -->
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="6dp"
-                android:hint="City">
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:hint="City *">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/input_city"
+                <AutoCompleteTextView
+                    android:id="@+id/spinner_city"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Year -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_input_layout_year"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:hint="Year">
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:hint="Year *">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/input_year"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:maxLength="4" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/spacing_sm"
             android:orientation="horizontal">
 
             <!-- Mileage -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/text_input_layout_mileage"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="6dp"
-                android:hint="KM Driven">
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:hint="KM Driven *"
+                app:suffixText=" km">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/input_mileage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:maxLength="7" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Fuel Type -->
@@ -165,8 +226,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:hint="Fuel">
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:hint="Fuel *">
 
                 <AutoCompleteTextView
                     android:id="@+id/spinner_fuel"
@@ -176,31 +237,74 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:orientation="horizontal">
+
+            <!-- Transmission -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/spacing_xs"
+                android:hint="Transmission *">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinner_transmission"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Condition -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:hint="Condition *">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinner_condition"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
         <!-- Description -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_layout_description"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Description">
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:hint="Description (Min 20 characters) *"
+            app:counterEnabled="true"
+            app:counterMaxLength="1000">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/input_description"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:gravity="top"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine"
+                android:maxLength="1000" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Submit Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_add_vehicle"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="80dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:layout_marginBottom="@dimen/spacing_xxl"
             android:text="Post Ad Now"
-            android:textSize="18sp" />
+            android:textSize="@dimen/text_size_body" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

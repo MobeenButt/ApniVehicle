@@ -8,17 +8,17 @@
 
     <item
         android:id="@+id/nav_used_cars"
-        android:icon="@drawable/ic_directions_car"
+        android:icon="@drawable/ic_search"
         android:title="@string/nav_used_cars" />
 
     <item
         android:id="@+id/nav_new_cars"
-        android:icon="@drawable/ic_car_rental"
+        android:icon="@drawable/ic_add"
         android:title="@string/nav_new_cars" />
 
     <item
         android:id="@+id/nav_bikes"
-        android:icon="@drawable/ic_two_wheeler"
+        android:icon="@drawable/ic_my_ads"
         android:title="@string/nav_bikes" />
 
     <item

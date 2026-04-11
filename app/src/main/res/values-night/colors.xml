@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ApniVehicle Dark Theme Colors -->
+    
+    <!-- Primary Colors (Lighter for dark theme) -->
+    <color name="primary">#42A5F5</color>
+    <color name="primary_dark">#1E88E5</color>
+    <color name="accent_cta">#FF8A50</color>
+    
+    <!-- Dark Theme Backgrounds -->
+    <color name="background">#121212</color>
+    <color name="surface_card">#1E1E1E</color>
+    <color name="text_primary">#E0E0E0</color>
+    <color name="text_secondary">#9E9E9E</color>
+    
+    <!-- Status Colors (Same as light theme) -->
+    <color name="success">#4CAF50</color>
+    <color name="error">#F44336</color>
+    <color name="warning">#F39C12</color>
+    
+    <!-- UI Elements -->
+    <color name="divider">#2C2C2C</color>
+    <color name="bottom_nav_item_selected">@color/primary</color>
+    <color name="bottom_nav_item_unselected">@color/text_secondary</color>
+    <color name="button_text_white">#FFFFFF</color>
+    
+    <!-- Price Color -->
+    <color name="price_green">#27AE60</color>
+    
+    <!-- Additional Dark Theme Colors -->
+    <color name="background_dark">#121212</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="text_primary_dark">#E0E0E0</color>
+    <color name="text_secondary_dark">#9E9E9E</color>
+</resources>

@@ -1,12 +1,18 @@
 package com.example.apnivehicle.repository
 
+import android.content.Context
+import android.util.Log
 import com.example.apnivehicle.R
 import com.example.apnivehicle.models.PriceRecord
 import com.example.apnivehicle.models.SearchHistory
 import com.example.apnivehicle.models.SearchPreference
 import com.example.apnivehicle.models.Vehicle
+import com.example.apnivehicle.utils.FileManager
 
 object VehicleRepository {
+    
+    private const val TAG = "VehicleRepository"
+    
     enum class SortOption {
         PRICE_LOW_HIGH,
         PRICE_HIGH_LOW,
@@ -15,7 +21,49 @@ object VehicleRepository {
         OLDEST
     }
 
-    private val vehicles = arrayListOf(
+    private val vehicles = arrayListOf<Vehicle>()
+    private val favoriteIds = mutableSetOf<String>()
+    private var isInitialized = false
+    
+    /**
+     * Initialize repository - load data from storage
+     */
+    fun init(context: Context) {
+        if (isInitialized) return
+        
+        FileManager.init(context)
+        
+        // Load vehicles from storage
+        val savedVehicles = FileManager.loadVehicles()
+        if (savedVehicles.isNotEmpty()) {
+            vehicles.clear()
+            vehicles.addAll(savedVehicles)
+            Log.d(TAG, "Loaded ${vehicles.size} vehicles from storage")
+        } else {
+            // Add sample data if no saved vehicles
+            loadSampleData()
+            saveVehicles()
+        }
+        
+        // Load favorites
+        val savedFavorites = FileManager.loadFavorites()
+        favoriteIds.clear()
+        favoriteIds.addAll(savedFavorites)
+        
+        // Update favorite status in vehicles
+        vehicles.forEach { vehicle ->
+            vehicle.isFavorite = favoriteIds.contains(vehicle.id)
+        }
+        
+        isInitialized = true
+        Log.d(TAG, "Repository initialized with ${vehicles.size} vehicles and ${favoriteIds.size} favorites")
+    }
+    
+    /**
+     * Load sample data for first launch
+     */
+    private fun loadSampleData() {
+        vehicles.addAll(listOf(
         Vehicle(
             title = "Toyota Corolla XLi",
             price = 3200000,
@@ -82,7 +130,22 @@ object VehicleRepository {
             sellerRating = 4.7f,
             sellerReviewCount = 15
         )
-    )
+    ))
+    }
+    
+    /**
+     * Save vehicles to storage
+     */
+    private fun saveVehicles() {
+        FileManager.saveVehicles(vehicles)
+    }
+    
+    /**
+     * Save favorites to storage
+     */
+    private fun saveFavorites() {
+        FileManager.saveFavorites(favoriteIds.toList())
+    }
 
     private val searchPreferences = mutableListOf<SearchPreference>()
     private val searchHistory = mutableListOf<SearchHistory>()
@@ -91,16 +154,39 @@ object VehicleRepository {
     // ===== Basic Operations =====
     fun addVehicle(vehicle: Vehicle) {
         vehicles.add(0, vehicle)
+        saveVehicles()
+        Log.d(TAG, "Vehicle added: ${vehicle.title}")
     }
 
     fun deleteVehicle(vehicleId: String) {
+        val vehicle = vehicles.find { it.id == vehicleId }
         vehicles.removeAll { it.id == vehicleId }
+        
+        // Delete associated images
+        vehicle?.let {
+            if (!it.imageUri.isNullOrEmpty()) {
+                FileManager.deleteImage(it.imageUri!!)
+            }
+            if (it.imageList.isNotEmpty()) {
+                FileManager.deleteImages(it.imageList)
+            }
+        }
+        
+        // Remove from favorites if present
+        if (favoriteIds.remove(vehicleId)) {
+            saveFavorites()
+        }
+        
+        saveVehicles()
+        Log.d(TAG, "Vehicle deleted: $vehicleId")
     }
 
     fun updateVehicle(updatedVehicle: Vehicle) {
         val index = vehicles.indexOfFirst { it.id == updatedVehicle.id }
         if (index != -1) {
             vehicles[index] = updatedVehicle
+            saveVehicles()
+            Log.d(TAG, "Vehicle updated: ${updatedVehicle.title}")
         }
     }
 
@@ -115,12 +201,22 @@ object VehicleRepository {
     fun toggleFavorite(vehicleId: String): Vehicle? {
         val vehicle = vehicles.find { it.id == vehicleId } ?: return null
         vehicle.isFavorite = !vehicle.isFavorite
+        
+        if (vehicle.isFavorite) {
+            favoriteIds.add(vehicleId)
+        } else {
+            favoriteIds.remove(vehicleId)
+        }
+        
+        saveFavorites()
+        Log.d(TAG, "Favorite toggled for: ${vehicle.title}, isFavorite: ${vehicle.isFavorite}")
         return vehicle
     }
 
     fun incrementViewCount(vehicleId: String) {
-        vehicles.find { it.id == vehicleId }?.viewCount?.let {
-            vehicles.find { it.id == vehicleId }?.viewCount = it + 1
+        vehicles.find { it.id == vehicleId }?.let { vehicle ->
+            vehicle.viewCount++
+            saveVehicles()
         }
     }
 
