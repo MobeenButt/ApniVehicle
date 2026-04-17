@@ -43,6 +43,12 @@
     <!-- Splash screen -->
     <string name="splash_tagline">Pakistan\'s #1 Vehicle Marketplace</string>
 
+    <!-- Onboarding -->
+    <string name="onboarding_image">Onboarding illustration</string>
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+    <string name="get_started">Get Started</string>
+
     <!-- Home screen -->
     <string name="notifications">Notifications</string>
     <string name="search_placeholder">Search cars, bikes, parts...</string>
@@ -52,9 +58,9 @@
 
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
-    <string name="nav_used_cars">Used Cars</string>
-    <string name="nav_new_cars">New Cars</string>
-    <string name="nav_bikes">Bikes</string>
+    <string name="nav_used_cars">Search</string>
+    <string name="nav_new_cars">Sell</string>
+    <string name="nav_bikes">My Ads</string>
     <string name="nav_more">More</string>
 
     <!-- Categories -->

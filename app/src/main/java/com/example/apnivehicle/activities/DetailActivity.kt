@@ -1,5 +1,6 @@
 package com.example.apnivehicle.activities
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -7,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.ActivityDetailBinding
+import com.example.apnivehicle.repository.AuthRepository
 import com.example.apnivehicle.repository.VehicleRepository
 import com.example.apnivehicle.utils.NotificationHelper
 import java.text.NumberFormat
@@ -27,7 +29,15 @@ class DetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val vehicleId = intent.getStringExtra(EXTRA_VEHICLE_ID)
-        val vehicle = vehicleId?.let { VehicleRepository.getVehicleById(it) } ?: run {
+        if (vehicleId.isNullOrEmpty()) {
+            Toast.makeText(this, "Invalid vehicle", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+        
+        val vehicle = VehicleRepository.getVehicleById(vehicleId)
+        if (vehicle == null) {
+            Toast.makeText(this, "Vehicle not found", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -69,20 +79,77 @@ class DetailActivity : AppCompatActivity() {
     private fun setupButtons(vehicle: com.example.apnivehicle.models.Vehicle) {
         binding.apply {
             btnChat.setOnClickListener {
-                Toast.makeText(
-                    this@DetailActivity,
-                    getString(R.string.contacting_seller_message, vehicle.title),
-                    Toast.LENGTH_SHORT
-                ).show()
+                try {
+                    val phoneNumber = getSellerPhoneNumber(vehicle)
+                    
+                    if (!phoneNumber.isNullOrBlank()) {
+                        // Open SMS app with seller's phone number
+                        val smsIntent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("sms:$phoneNumber")
+                            putExtra("sms_body", "Hi, I'm interested in your ${vehicle.title}")
+                        }
+                        startActivity(smsIntent)
+                    } else {
+                        Toast.makeText(
+                            this@DetailActivity,
+                            "Seller's phone number not available",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("DetailActivity", "Error opening SMS", e)
+                    Toast.makeText(
+                        this@DetailActivity,
+                        "Unable to open messaging app",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
 
             btnCall.setOnClickListener {
-                Toast.makeText(
-                    this@DetailActivity,
-                    getString(R.string.calling_seller_message, vehicle.title),
-                    Toast.LENGTH_SHORT
-                ).show()
+                try {
+                    val phoneNumber = getSellerPhoneNumber(vehicle)
+                    
+                    if (!phoneNumber.isNullOrBlank()) {
+                        // Open phone dialer with seller's phone number
+                        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                            data = Uri.parse("tel:$phoneNumber")
+                        }
+                        startActivity(dialIntent)
+                    } else {
+                        Toast.makeText(
+                            this@DetailActivity,
+                            "Seller's phone number not available",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("DetailActivity", "Error opening dialer", e)
+                    Toast.makeText(
+                        this@DetailActivity,
+                        "Unable to open phone dialer",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
+    }
+
+    private fun getSellerPhoneNumber(vehicle: com.example.apnivehicle.models.Vehicle): String? {
+        // First try vehicle's seller phone
+        if (!vehicle.sellerPhone.isNullOrBlank() && vehicle.sellerPhone.isNotEmpty()) {
+            return vehicle.sellerPhone
+        }
+        
+        // Fallback to seller's phone from AuthRepository
+        if (vehicle.sellerId.isNotEmpty()) {
+            val seller = AuthRepository.getUserById(vehicle.sellerId)
+            if (!seller?.phoneNumber.isNullOrBlank() && seller?.phoneNumber?.isNotEmpty() == true) {
+                return seller.phoneNumber
+            }
+        }
+        
+        // Return null if no phone number found
+        return null
     }
 }

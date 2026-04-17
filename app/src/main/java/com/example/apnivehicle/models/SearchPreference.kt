@@ -18,8 +18,3 @@ data class SearchPreference(
     val createdAt: Long = System.currentTimeMillis()
 )
 
-data class SearchHistory(
-    val query: String,
-    val timestamp: Long = System.currentTimeMillis()
-)
-

@@ -177,28 +177,89 @@ class ComparisonFragment : Fragment() {
             return
         }
 
-        val sb = StringBuilder()
-        sb.append("ApniVehicle - Vehicle Comparison\n\n")
+        try {
+            // Create PDF document
+            val pdfDocument = android.graphics.pdf.PdfDocument()
+            val pageInfo = android.graphics.pdf.PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
+            val page = pdfDocument.startPage(pageInfo)
+            val canvas = page.canvas
+            val paint = android.graphics.Paint()
 
-        val headers = mutableListOf("Specification")
-        headers.addAll(selectedVehicles.map { it.title })
-        sb.append(headers.joinToString(" | ") + "\n")
-        sb.append("-".repeat(80) + "\n")
+            // Title
+            paint.textSize = 20f
+            paint.typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            canvas.drawText("Vehicle Comparison Report", 50f, 50f, paint)
 
-        sb.append("Price|${selectedVehicles.map { it.price }.joinToString("|")}\n")
-        sb.append("Year|${selectedVehicles.map { it.year }.joinToString("|")}\n")
-        sb.append("Mileage|${selectedVehicles.map { it.mileage }.joinToString("|")}\n")
-        sb.append("Transmission|${selectedVehicles.map { it.transmission }.joinToString("|")}\n")
-        sb.append("Fuel Type|${selectedVehicles.map { it.fuelType }.joinToString("|")}\n")
-        sb.append("Condition|${selectedVehicles.map { it.condition }.joinToString("|")}\n")
-        sb.append("Location|${selectedVehicles.map { it.city }.joinToString("|")}\n")
-        sb.append("Seller Rating|${selectedVehicles.map { it.sellerRating }.joinToString("|")}\n")
+            // Date
+            paint.textSize = 12f
+            paint.typeface = android.graphics.Typeface.DEFAULT
+            val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+            canvas.drawText("Generated: ${dateFormat.format(java.util.Date())}", 50f, 75f, paint)
 
-        Toast.makeText(
-            requireContext(),
-            "Comparison data prepared (Share functionality in production)",
-            Toast.LENGTH_LONG
-        ).show()
+            // Draw comparison table
+            var yPos = 120f
+            paint.textSize = 10f
+            paint.typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+
+            // Headers
+            canvas.drawText("Specification", 50f, yPos, paint)
+            selectedVehicles.forEachIndexed { index, vehicle ->
+                canvas.drawText(vehicle.title.take(15), 200f + (index * 150f), yPos, paint)
+            }
+            yPos += 25f
+
+            // Data rows
+            paint.typeface = android.graphics.Typeface.DEFAULT
+            val rows = listOf(
+                "Price" to selectedVehicles.map { priceFormatter.format(it.price) },
+                "Year" to selectedVehicles.map { it.year.toString() },
+                "Brand" to selectedVehicles.map { it.brand },
+                "Model" to selectedVehicles.map { it.model },
+                "Mileage" to selectedVehicles.map { "${it.mileage} km" },
+                "Transmission" to selectedVehicles.map { it.transmission },
+                "Fuel Type" to selectedVehicles.map { it.fuelType },
+                "Condition" to selectedVehicles.map { it.condition },
+                "Location" to selectedVehicles.map { it.city },
+                "Rating" to selectedVehicles.map { "${it.sellerRating}/5" }
+            )
+
+            rows.forEach { (label, values) ->
+                canvas.drawText(label, 50f, yPos, paint)
+                values.forEachIndexed { index, value ->
+                    canvas.drawText(value.take(15), 200f + (index * 150f), yPos, paint)
+                }
+                yPos += 20f
+            }
+
+            pdfDocument.finishPage(page)
+
+            // Save PDF
+            val fileName = "vehicle_comparison_${System.currentTimeMillis()}.pdf"
+            val file = java.io.File(requireContext().getExternalFilesDir(null), fileName)
+            
+            pdfDocument.writeTo(java.io.FileOutputStream(file))
+            pdfDocument.close()
+
+            // Share PDF
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.provider",
+                file
+            )
+
+            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "application/pdf"
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            startActivity(android.content.Intent.createChooser(shareIntent, "Share Comparison PDF"))
+            Toast.makeText(requireContext(), "PDF exported successfully", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Failed to export PDF: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onDestroyView() {

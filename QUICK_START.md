@@ -1,237 +1,275 @@
-# Quick Start Guide - Login/SignUp System
+# 🚀 ApniVehicle v2.0 - Quick Start Guide
 
-## 🚀 Quick Overview
+## ⚡ Get Started in 5 Minutes
 
-The ApniVehicle app now has a complete authentication system. Here's what you need to know:
+### 1. Build & Run
+```bash
+# Open project in Android Studio
+# Wait for Gradle sync
+# Click Run (Shift + F10)
+```
+
+### 2. Test Key Features
+
+#### ✅ Test Data Persistence
+1. Launch app
+2. Sign up: `test@example.com` / `Test@123`
+3. Go to "Add Vehicle" tab
+4. Fill form and add image
+5. Submit
+6. **Close app completely**
+7. Reopen app
+8. ✅ Your vehicle should still be there!
+
+#### ✅ Test Dark Theme
+1. Go to Settings (bottom nav)
+2. Toggle "Dark Theme" switch
+3. ✅ App switches to dark mode instantly
+4. Close and reopen app
+5. ✅ Dark theme persists!
+
+#### ✅ Test Favorites
+1. Go to Home
+2. Click heart icon on any vehicle
+3. Go to Favorites tab
+4. ✅ Vehicle appears in favorites
+5. Close and reopen app
+6. ✅ Favorite still there!
+
+### 3. Explore New Features
+
+#### Settings Screen
+- **Theme Toggle:** Switch between light/dark
+- **Language:** Choose English or Urdu
+- **Notifications:** Enable/disable
+- **About:** App information
+- **Privacy Policy:** View privacy details
+- **Terms:** View terms & conditions
+
+#### Enhanced Validation
+- **Sign Up:** Try weak password → See error
+- **Add Vehicle:** Try invalid price → See error
+- **Phone:** Try wrong format → See error
 
 ---
 
-## 📍 Entry Point
+## 📱 Sample Test Data
 
-**When you run the app:**
-1. SplashActivity loads (2 second splash screen)
-2. AuthRepository checks if user is logged in
-3. Routes to either LoginActivity or MainActivity
-
----
-
-## 🔑 Test Accounts (Pre-loaded)
-
-Use these to test immediately after app launch:
-
+### Test Users (Already Created)
 ```
 Email: test@example.com
-Password: 123456
-
-OR
+Password: Test@123
 
 Email: demo@example.com
-Password: 123456
+Password: Demo@123
+```
+
+### Sample Vehicle Data
+```
+Title: Toyota Corolla XLi 2020
+Price: 3200000
+City: Lahore
+Year: 2020
+Mileage: 45000
+Fuel: Petrol
+Transmission: Manual
+Description: Excellent condition family sedan with complete service history. First owner, all original parts.
 ```
 
 ---
 
-## 🆕 Create Your Own Account
+## 🎯 Key Features to Test
 
-1. Click "Sign Up" on the login screen
-2. Enter:
-   - Email (must be valid format)
-   - Username (unique)
-   - Password (6+ characters)
-   - Confirm Password (must match)
-3. Tap "Sign Up"
-4. You're automatically logged in!
+### ✅ Authentication
+- [x] Sign up with validation
+- [x] Login with remember me
+- [x] Password strength indicator
+- [x] Logout with confirmation
+
+### ✅ Vehicle Management
+- [x] Add vehicle with image
+- [x] Edit vehicle (My Ads tab)
+- [x] Delete vehicle
+- [x] View vehicle details
+
+### ✅ Browse & Search
+- [x] Browse all vehicles
+- [x] Search by keyword
+- [x] Filter by city/price/brand
+- [x] Sort by price/date
+- [x] Toggle grid/list view
+
+### ✅ Favorites
+- [x] Add to favorites
+- [x] Remove from favorites
+- [x] View favorites list
+- [x] Favorites persist
+
+### ✅ Settings
+- [x] Toggle dark theme
+- [x] Change language
+- [x] Toggle notifications
+- [x] View about/privacy/terms
+- [x] Logout
 
 ---
 
-## 🔐 Key Components
+## 🐛 Troubleshooting
 
-| Component | Purpose |
-|-----------|---------|
-| `AuthRepository` | Manages all user auth, in-memory storage |
-| `LoginActivity` | Login screen and flow |
-| `SignUpActivity` | Registration screen and flow |
-| `User` Model | Represents a user with id, email, username, password |
-| `SplashActivity` | Auth check on app start |
-| `SettingsFragment` | Logout and show user info |
-
----
-
-## 🌊 Flow Diagram
-
-```
-┌─────────────┐
-│ App Starts  │
-└──────┬──────┘
-       │
-       ▼
-┌──────────────────┐
-│ SplashActivity   │
-│ (2 sec delay)    │
-└──────┬───────────┘
-       │
-       ▼
-┌──────────────────────────┐
-│ Check AuthRepository     │
-│ isUserLoggedIn()?        │
-└──────┬─────────────┬─────┘
-       │             │
-    YES│             │NO
-       ▼             ▼
-   MainActivity   LoginActivity
-       ▼             ▼
-   (Home)      ┌─────────────┐
-            ┌─▶│ Login Form  │
-            │  └─────────────┘
-            │       ▼
-            │  ┌──────────────┐
-            ├─▶│ SignUp Form  │
-            │  └──────────────┘
-            │       ▼
-            │  ┌──────────────┐
-            └─▶│ MainActivity │
-               └──────────────┘
+### App Crashes on Start
+**Solution:** Clean and rebuild
+```bash
+Build > Clean Project
+Build > Rebuild Project
 ```
 
----
-
-## 💡 Usage Examples
-
-### Check if user is logged in:
-```kotlin
-if (AuthRepository.isUserLoggedIn()) {
-    // User is logged in
-}
+### Images Not Showing
+**Solution:** Grant storage permission
+```
+Settings > Apps > ApniVehicle > Permissions > Storage > Allow
 ```
 
-### Get current user:
-```kotlin
-val currentUser = AuthRepository.getCurrentUser()
-currentUser?.email // Get user's email
-currentUser?.username // Get user's username
-```
+### Dark Theme Not Working
+**Solution:** Check Android version
+- Requires Android 5.0+ (API 21+)
+- Works best on Android 10+ (API 29+)
 
-### Logout user:
-```kotlin
-AuthRepository.logout()
-// Then navigate to LoginActivity
-```
+### Data Not Persisting
+**Solution:** Check initialization
+- FileManager.init() should be called in SplashActivity
+- VehicleRepository.init() should be called in SplashActivity
 
 ---
 
-## 🎨 UI Components Location
+## 📊 What's New in v2.0
 
-| Screen | File |
-|--------|------|
-| Login | `res/layout/activity_login.xml` |
-| SignUp | `res/layout/activity_signup.xml` |
-| Settings | `res/layout/fragment_settings.xml` |
+### 🆕 New Features
+- ✅ Complete data persistence
+- ✅ Dark theme support
+- ✅ Enhanced validation
+- ✅ Professional settings screen
+- ✅ Theme toggle
+- ✅ Language selection
+- ✅ About/Privacy/Terms pages
 
----
+### 🔧 Improvements
+- ✅ Better code organization
+- ✅ Consistent design system
+- ✅ Error handling
+- ✅ Image compression
+- ✅ Logging for debugging
 
-## 📝 Validation Happens At:
-
-1. **Client-side** (in Activities):
-   - Check for empty fields
-   - Password confirmation match
-
-2. **Repository-side** (in AuthRepository):
-   - Email uniqueness
-   - Email format
-   - Password length
-   - Username uniqueness
-
----
-
-## ⚙️ Configuration
-
-To modify validation rules, edit `AuthRepository.kt`:
-
-```kotlin
-// Email validation regex
-private fun isValidEmail(email: String): Boolean {
-    return email.contains("@") && email.contains(".")
-}
-
-// Password minimum length
-if (password.length < 6) { // Change 6 to desired length
-    return Result.failure<User>(...)
-}
-```
+### 🐛 Bug Fixes
+- ✅ Vehicles disappearing (FIXED)
+- ✅ Favorites not persisting (FIXED)
+- ✅ No dark theme (FIXED)
+- ✅ Weak validation (FIXED)
+- ✅ Inconsistent spacing (FIXED)
 
 ---
 
-## 🧪 Testing Flow
+## 🎨 UI Highlights
 
-1. **Fresh Install**: Tap "Sign Up" → Create account
-2. **With Account**: Login with email/password
-3. **Session Restore**: Kill app → Relaunch → Direct to MainActivity
-4. **Logout**: Settings → Logout → Back to LoginActivity
+### Light Theme
+- Clean white backgrounds
+- Blue primary color (#1E88E5)
+- Orange accent (#FF6F00)
+- Professional typography
 
----
-
-## 📱 User Data Stored
-
-Each user has:
-- `id` - Unique identifier (UUID)
-- `email` - Email address
-- `username` - Display username
-- `password` - Password (plain text)
-- `createdAt` - Timestamp when account created
+### Dark Theme
+- Pure black background (#121212)
+- Elevated surfaces (#1E1E1E)
+- Lighter blue primary (#42A5F5)
+- AMOLED-friendly
 
 ---
 
-## 🔒 Important Notes
+## 📖 Documentation
 
-- ⚠️ **Passwords are stored in plain text** (for demo)
-- 💾 **Data is in-memory** (cleared when app fully closes)
-- 🔄 **Session persists** across app restarts via SharedPreferences
-- 🌐 **No network calls** (everything is local)
-- ✅ **No database required**
+### For Users
+- **UPGRADE_SUMMARY.md** - What changed
+- **QUICK_START.md** - This file
 
----
-
-## 🚨 Common Issues & Solutions
-
-### Issue: Login fails with correct credentials
-**Solution**: Make sure to use exactly:
-- `test@example.com` (lowercase)
-- `123456` (exact password)
-
-### Issue: Signup shows "Email already exists"
-**Solution**: Use a different email address or logout first
-
-### Issue: Session not persisting
-**Solution**: Check that SharedPreferences is not cleared in app settings
-
-### Issue: SignUp button not working
-**Solution**: Ensure all fields are filled and passwords match
+### For Developers
+- **PROJECT_ANALYSIS_REPORT.md** - Detailed analysis
+- **IMPLEMENTATION_GUIDE.md** - Technical guide
 
 ---
 
-## 📞 Support
+## 🚀 Next Steps
 
-For issues or questions:
-1. Check the validation error messages (shown as Toast)
-2. Enable logging in AuthRepository
-3. Check app's SharedPreferences in Device File Explorer
-4. Review Logcat for errors
+### Immediate
+1. Test all features
+2. Try dark theme
+3. Add some vehicles
+4. Test persistence
+
+### Short Term
+1. Gather user feedback
+2. Fix any bugs
+3. Optimize performance
+4. Add more sample data
+
+### Long Term
+1. Implement multiple images
+2. Add image carousel
+3. Add loading states
+4. Implement forgot password
 
 ---
 
-## ✅ Testing Checklist
+## 💡 Pro Tips
 
-- [ ] App launches to Login (first time)
-- [ ] Can login with test@example.com
-- [ ] Settings shows email/username
-- [ ] Logout works
-- [ ] Session persists after restart
-- [ ] SignUp form validates fields
-- [ ] Can't create duplicate emails
-- [ ] Password fields toggle visibility
+### For Best Experience
+- ✅ Use dark theme at night
+- ✅ Enable notifications
+- ✅ Add detailed descriptions
+- ✅ Use high-quality images
+- ✅ Fill all vehicle fields
+
+### For Testing
+- ✅ Test on different devices
+- ✅ Test both themes
+- ✅ Test with/without internet
+- ✅ Test data persistence
+- ✅ Test all validations
 
 ---
 
-**Last Updated**: March 2026  
-**Status**: ✅ Production Ready
+## 📞 Need Help?
 
+### Common Questions
+
+**Q: Where is my data stored?**
+A: In app's private storage (`/data/data/com.example.apnivehicle/files/`)
+
+**Q: Can I export my data?**
+A: Not yet, coming in future update
+
+**Q: How do I reset the app?**
+A: Clear app data in Android settings
+
+**Q: Is my data secure?**
+A: Yes, passwords are encrypted, data is local
+
+**Q: Can I use this offline?**
+A: Yes, all features work offline
+
+---
+
+## 🎉 Enjoy!
+
+Your ApniVehicle app is now **production-ready** with:
+- ✅ Professional features
+- ✅ Beautiful design
+- ✅ Robust validation
+- ✅ Data persistence
+- ✅ Dark theme
+
+**Start testing and enjoy your upgraded app!** 🚀
+
+---
+
+**Version:** 2.0  
+**Last Updated:** April 11, 2026  
+**Status:** Ready to Use ✅

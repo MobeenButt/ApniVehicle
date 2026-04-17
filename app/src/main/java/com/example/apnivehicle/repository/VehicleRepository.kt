@@ -1,12 +1,18 @@
 package com.example.apnivehicle.repository
 
+import android.content.Context
+import android.util.Log
 import com.example.apnivehicle.R
 import com.example.apnivehicle.models.PriceRecord
 import com.example.apnivehicle.models.SearchHistory
 import com.example.apnivehicle.models.SearchPreference
 import com.example.apnivehicle.models.Vehicle
+import com.example.apnivehicle.utils.FileManager
 
 object VehicleRepository {
+    
+    private const val TAG = "VehicleRepository"
+    
     enum class SortOption {
         PRICE_LOW_HIGH,
         PRICE_HIGH_LOW,
@@ -15,20 +21,66 @@ object VehicleRepository {
         OLDEST
     }
 
-    private val vehicles = arrayListOf(
+    private val vehicles = arrayListOf<Vehicle>()
+    private val favoriteIds = mutableSetOf<String>()
+    private var isInitialized = false
+    
+    /**
+     * Initialize repository - load data from storage
+     */
+    fun init(context: Context) {
+        if (isInitialized) return
+        
+        FileManager.init(context)
+        
+        // Load vehicles from storage
+        val savedVehicles = FileManager.loadVehicles()
+        if (savedVehicles.isNotEmpty()) {
+            vehicles.clear()
+            vehicles.addAll(savedVehicles)
+            Log.d(TAG, "Loaded ${vehicles.size} vehicles from storage")
+        } else {
+            // Add sample data if no saved vehicles
+            loadSampleData()
+            saveVehicles()
+        }
+        
+        // Load favorites
+        val savedFavorites = FileManager.loadFavorites()
+        favoriteIds.clear()
+        favoriteIds.addAll(savedFavorites)
+        
+        // Update favorite status in vehicles
+        vehicles.forEach { vehicle ->
+            vehicle.isFavorite = favoriteIds.contains(vehicle.id)
+        }
+        
+        isInitialized = true
+        Log.d(TAG, "Repository initialized with ${vehicles.size} vehicles and ${favoriteIds.size} favorites")
+    }
+    
+    /**
+     * Load sample data for first launch
+     */
+    private fun loadSampleData() {
+        vehicles.addAll(listOf(
         Vehicle(
             title = "Toyota Corolla XLi",
             price = 3200000,
             city = "Lahore",
             year = 2019,
             image = R.drawable.ic_directions_car,
-            description = "Neat family sedan in excellent condition.",
+            description = "Neat family sedan in excellent condition. Well maintained with complete service history. First owner, accident-free.",
             brand = "Toyota",
             model = "Corolla",
             mileage = 45000,
             transmission = "Manual",
             fuelType = "Petrol",
             condition = "Used",
+            color = "Silver",
+            numberOfOwners = 1,
+            sellerId = "test-user-id",
+            sellerPhone = "0300-1234567",
             sellerRating = 4.8f,
             sellerReviewCount = 12
         ),
@@ -38,13 +90,17 @@ object VehicleRepository {
             city = "Karachi",
             year = 2021,
             image = R.drawable.ic_car_rental,
-            description = "Single owner, low mileage, complete documents.",
+            description = "Single owner, low mileage, complete documents. Imported model with sunroof and leather seats. Excellent condition.",
             brand = "Honda",
             model = "Civic",
             mileage = 25000,
             transmission = "Automatic",
             fuelType = "Petrol",
             condition = "Used",
+            color = "Black",
+            numberOfOwners = 1,
+            sellerId = "demo-user-id",
+            sellerPhone = "0321-9876543",
             sellerRating = 5f,
             sellerReviewCount = 28,
             isFavorite = true
@@ -55,13 +111,17 @@ object VehicleRepository {
             city = "Islamabad",
             year = 2020,
             image = R.drawable.ic_directions_car,
-            description = "Economical city car with chilled AC.",
+            description = "Economical city car with chilled AC. Perfect for daily commute. Low fuel consumption and easy maintenance.",
             brand = "Suzuki",
             model = "Alto",
             mileage = 35000,
             transmission = "Manual",
             fuelType = "Petrol",
             condition = "Used",
+            color = "White",
+            numberOfOwners = 1,
+            sellerId = "test-user-id",
+            sellerPhone = "0300-1234567",
             isMyAd = true,
             sellerRating = 4.5f,
             sellerReviewCount = 8
@@ -71,18 +131,117 @@ object VehicleRepository {
             price = 3800000,
             city = "Lahore",
             year = 2020,
-            image = R.drawable.ic_directions_car,
-            description = "Imported model with sunroof.",
+            image = R.drawable.ic_car_rental,
+            description = "Imported model with sunroof. Fully loaded with all features. Excellent driving experience and comfort.",
             brand = "Hyundai",
             model = "Elantra",
             mileage = 52000,
             transmission = "Automatic",
             fuelType = "Petrol",
             condition = "Used",
+            color = "Blue",
+            numberOfOwners = 2,
+            sellerId = "demo-user-id",
+            sellerPhone = "0321-9876543",
             sellerRating = 4.7f,
             sellerReviewCount = 15
+        ),
+        Vehicle(
+            title = "Honda City Aspire",
+            price = 2850000,
+            city = "Faisalabad",
+            year = 2018,
+            image = R.drawable.ic_directions_car,
+            description = "Well maintained Honda City with complete service record. Smooth engine, excellent fuel average.",
+            brand = "Honda",
+            model = "City",
+            mileage = 68000,
+            transmission = "Manual",
+            fuelType = "Petrol",
+            condition = "Used",
+            color = "Red",
+            numberOfOwners = 1,
+            sellerId = "test-user-id",
+            sellerPhone = "0300-1234567",
+            sellerRating = 4.6f,
+            sellerReviewCount = 10
+        ),
+        Vehicle(
+            title = "Suzuki Cultus VXL",
+            price = 2100000,
+            city = "Multan",
+            year = 2019,
+            image = R.drawable.ic_car_rental,
+            description = "Family car in pristine condition. Low mileage, single owner. All original parts and documents.",
+            brand = "Suzuki",
+            model = "Cultus",
+            mileage = 42000,
+            transmission = "Automatic",
+            fuelType = "Petrol",
+            condition = "Used",
+            color = "Pearl White",
+            numberOfOwners = 1,
+            sellerId = "demo-user-id",
+            sellerPhone = "0321-9876543",
+            sellerRating = 4.9f,
+            sellerReviewCount = 22
+        ),
+        Vehicle(
+            title = "Toyota Yaris GLi",
+            price = 2950000,
+            city = "Rawalpindi",
+            year = 2021,
+            image = R.drawable.ic_directions_car,
+            description = "Brand new condition Toyota Yaris. Barely driven, like showroom condition. Full warranty remaining.",
+            brand = "Toyota",
+            model = "Yaris",
+            mileage = 15000,
+            transmission = "Automatic",
+            fuelType = "Petrol",
+            condition = "Used",
+            color = "White",
+            numberOfOwners = 1,
+            sellerId = "test-user-id",
+            sellerPhone = "0300-1234567",
+            sellerRating = 4.9f,
+            sellerReviewCount = 18
+        ),
+        Vehicle(
+            title = "Suzuki Wagon R VXL",
+            price = 1750000,
+            city = "Peshawar",
+            year = 2019,
+            image = R.drawable.ic_car_rental,
+            description = "Spacious family hatchback. Great fuel economy and comfortable ride. Well maintained.",
+            brand = "Suzuki",
+            model = "Wagon R",
+            mileage = 48000,
+            transmission = "Manual",
+            fuelType = "Petrol",
+            condition = "Used",
+            color = "Silver",
+            numberOfOwners = 1,
+            sellerId = "demo-user-id",
+            sellerPhone = "0321-9876543",
+            sellerRating = 4.4f,
+            sellerReviewCount = 9
         )
-    )
+    ))
+    }
+    
+    /**
+     * Save vehicles to storage
+     */
+    private fun saveVehicles() {
+        FileManager.saveVehicles(vehicles)
+    }
+    
+    /**
+     * Save favorites to storage
+     */
+    private fun saveFavorites() {
+        FileManager.saveFavorites(favoriteIds.toList())
+    }
 
     private val searchPreferences = mutableListOf<SearchPreference>()
     private val searchHistory = mutableListOf<SearchHistory>()
@@ -91,16 +250,39 @@ object VehicleRepository {
     // ===== Basic Operations =====
     fun addVehicle(vehicle: Vehicle) {
         vehicles.add(0, vehicle)
+        saveVehicles()
+        Log.d(TAG, "Vehicle added: ${vehicle.title}")
     }
 
     fun deleteVehicle(vehicleId: String) {
+        val vehicle = vehicles.find { it.id == vehicleId }
         vehicles.removeAll { it.id == vehicleId }
+        
+        // Delete associated images
+        vehicle?.let {
+            if (!it.imageUri.isNullOrEmpty()) {
+                FileManager.deleteImage(it.imageUri!!)
+            }
+            if (it.imageList.isNotEmpty()) {
+                FileManager.deleteImages(it.imageList)
+            }
+        }
+        
+        // Remove from favorites if present
+        if (favoriteIds.remove(vehicleId)) {
+            saveFavorites()
+        }
+        
+        saveVehicles()
+        Log.d(TAG, "Vehicle deleted: $vehicleId")
     }
 
     fun updateVehicle(updatedVehicle: Vehicle) {
         val index = vehicles.indexOfFirst { it.id == updatedVehicle.id }
         if (index != -1) {
             vehicles[index] = updatedVehicle
+            saveVehicles()
+            Log.d(TAG, "Vehicle updated: ${updatedVehicle.title}")
         }
     }
 
@@ -115,12 +297,22 @@ object VehicleRepository {
     fun toggleFavorite(vehicleId: String): Vehicle? {
         val vehicle = vehicles.find { it.id == vehicleId } ?: return null
         vehicle.isFavorite = !vehicle.isFavorite
+        
+        if (vehicle.isFavorite) {
+            favoriteIds.add(vehicleId)
+        } else {
+            favoriteIds.remove(vehicleId)
+        }
+        
+        saveFavorites()
+        Log.d(TAG, "Favorite toggled for: ${vehicle.title}, isFavorite: ${vehicle.isFavorite}")
         return vehicle
     }
 
     fun incrementViewCount(vehicleId: String) {
-        vehicles.find { it.id == vehicleId }?.viewCount?.let {
-            vehicles.find { it.id == vehicleId }?.viewCount = it + 1
+        vehicles.find { it.id == vehicleId }?.let { vehicle ->
+            vehicle.viewCount++
+            saveVehicles()
         }
     }
 
