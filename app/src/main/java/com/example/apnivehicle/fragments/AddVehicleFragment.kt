@@ -14,21 +14,35 @@ import com.example.apnivehicle.databinding.FragmentAddVehicleBinding
 import com.example.apnivehicle.models.Vehicle
 import com.example.apnivehicle.models.VehicleType
 import com.example.apnivehicle.repository.VehicleRepository
+import com.example.apnivehicle.utils.Constants
+import com.example.apnivehicle.utils.FileManager
 import com.example.apnivehicle.utils.NotificationHelper
+import com.example.apnivehicle.utils.ValidationUtils
+import com.google.android.material.snackbar.Snackbar
 
 class AddVehicleFragment : Fragment() {
 
     private var _binding: FragmentAddVehicleBinding? = null
     private val binding get() = _binding!!
     
-    private var selectedImageUri: Uri? = null
+    private val selectedImageUris = mutableListOf<Uri>()
 
-    private val pickImageLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            selectedImageUri = uri
-            binding.ivVehicleImage.setImageURI(uri)
+    private val pickImagesLauncher = registerForActivityResult(
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            val remainingSlots = Constants.MAX_IMAGES - selectedImageUris.size
+            val urisToAdd = uris.take(remainingSlots)
+            selectedImageUris.addAll(urisToAdd)
+            updateImagePreview()
+            
+            if (uris.size > remainingSlots) {
+                Toast.makeText(
+                    requireContext(),
+                    "Maximum ${Constants.MAX_IMAGES} images allowed. ${uris.size - remainingSlots} images not added.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -45,76 +59,238 @@ class AddVehicleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         setupDropdowns()
-
-        binding.btnSelectImage.setOnClickListener {
-            pickImageLauncher.launch("image/*")
-        }
-
-        binding.buttonAddVehicle.setOnClickListener {
-            validateAndSubmit()
-        }
+        setupImagePicker()
+        setupSubmitButton()
     }
 
     private fun setupDropdowns() {
         // Vehicle Types
         val types = VehicleType.values().map { it.name }
-        val typeAdapter: ArrayAdapter<String> = ArrayAdapter(requireContext(), R.layout.list_item, types)
+        val typeAdapter = ArrayAdapter(requireContext(), R.layout.list_item, types)
         binding.spinnerType.setAdapter(typeAdapter)
 
+        // Cities
+        val cityAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.PAKISTANI_CITIES)
+        binding.spinnerCity.setAdapter(cityAdapter)
+
         // Fuel Types
-        val fuelTypes = listOf("Petrol", "Diesel", "CNG", "Hybrid", "Electric")
-        val fuelAdapter: ArrayAdapter<String> = ArrayAdapter(requireContext(), R.layout.list_item, fuelTypes)
+        val fuelAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.FUEL_TYPES)
         binding.spinnerFuel.setAdapter(fuelAdapter)
+        
+        // Transmission
+        val transmissionAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.TRANSMISSION_TYPES)
+        binding.spinnerTransmission.setAdapter(transmissionAdapter)
+        
+        // Condition
+        val conditionAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_CONDITIONS)
+        binding.spinnerCondition.setAdapter(conditionAdapter)
+        
+        // Brand
+        val brandAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_MAKES)
+        binding.spinnerBrand.setAdapter(brandAdapter)
+    }
+
+    private fun setupImagePicker() {
+        binding.btnSelectImage.setOnClickListener {
+            if (selectedImageUris.size >= Constants.MAX_IMAGES) {
+                Toast.makeText(
+                    requireContext(),
+                    "Maximum ${Constants.MAX_IMAGES} images allowed",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                pickImagesLauncher.launch("image/*")
+            }
+        }
+        
+        binding.btnClearImages.setOnClickListener {
+            selectedImageUris.clear()
+            updateImagePreview()
+        }
+    }
+
+    private fun updateImagePreview() {
+        if (selectedImageUris.isNotEmpty()) {
+            binding.ivVehicleImage.setImageURI(selectedImageUris[0])
+            binding.textImageCount.text = "${selectedImageUris.size} image(s) selected"
+            binding.textImageCount.visibility = View.VISIBLE
+            binding.btnClearImages.visibility = View.VISIBLE
+        } else {
+            binding.ivVehicleImage.setImageResource(R.drawable.ic_car_rental)
+            binding.textImageCount.visibility = View.GONE
+            binding.btnClearImages.visibility = View.GONE
+        }
+    }
+
+    private fun setupSubmitButton() {
+        binding.buttonAddVehicle.setOnClickListener {
+            validateAndSubmit()
+        }
     }
 
     private fun validateAndSubmit() {
+        // Get input values
         val title = binding.inputTitle.text.toString().trim()
-        val price = binding.inputPrice.text.toString().toLongOrNull()
-        val city = binding.inputCity.text.toString().trim()
-        val year = binding.inputYear.text.toString().toIntOrNull()
-        val mileage = binding.inputMileage.text.toString().toIntOrNull() ?: 0
+        val priceStr = binding.inputPrice.text.toString().trim()
+        val city = binding.spinnerCity.text.toString().trim()
+        val yearStr = binding.inputYear.text.toString().trim()
+        val mileageStr = binding.inputMileage.text.toString().trim()
         val typeStr = binding.spinnerType.text.toString()
+        val brand = binding.spinnerBrand.text.toString().trim()
         val fuelType = binding.spinnerFuel.text.toString()
+        val transmission = binding.spinnerTransmission.text.toString()
+        val condition = binding.spinnerCondition.text.toString()
         val description = binding.inputDescription.text.toString().trim()
 
-        if (title.isBlank() || price == null || city.isBlank() || year == null || typeStr.isBlank() || description.isBlank()) {
-            Toast.makeText(requireContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show()
+        // Validate title
+        val titleValidation = ValidationUtils.validateVehicleTitle(title)
+        if (!titleValidation.isValid) {
+            binding.textInputLayoutTitle.error = titleValidation.errorMessage
+            return
+        } else {
+            binding.textInputLayoutTitle.error = null
+        }
+
+        // Validate price
+        val price = priceStr.toLongOrNull()
+        val priceValidation = ValidationUtils.validatePrice(price)
+        if (!priceValidation.isValid) {
+            binding.textInputLayoutPrice.error = priceValidation.errorMessage
+            return
+        } else {
+            binding.textInputLayoutPrice.error = null
+        }
+
+        // Validate city
+        val cityValidation = ValidationUtils.validateCity(city)
+        if (!cityValidation.isValid) {
+            Snackbar.make(binding.root, cityValidation.errorMessage ?: "Invalid city", Snackbar.LENGTH_SHORT).show()
             return
         }
 
+        // Validate year
+        val year = yearStr.toIntOrNull()
+        val yearValidation = ValidationUtils.validateYear(year)
+        if (!yearValidation.isValid) {
+            binding.textInputLayoutYear.error = yearValidation.errorMessage
+            return
+        } else {
+            binding.textInputLayoutYear.error = null
+        }
+
+        // Validate mileage
+        val mileage = mileageStr.toIntOrNull()
+        val mileageValidation = ValidationUtils.validateMileage(mileage)
+        if (!mileageValidation.isValid) {
+            binding.textInputLayoutMileage.error = mileageValidation.errorMessage
+            return
+        } else {
+            binding.textInputLayoutMileage.error = null
+        }
+
+        // Validate description
+        val descriptionValidation = ValidationUtils.validateDescription(description)
+        if (!descriptionValidation.isValid) {
+            binding.textInputLayoutDescription.error = descriptionValidation.errorMessage
+            return
+        } else {
+            binding.textInputLayoutDescription.error = null
+        }
+
+        // Validate images
+        val imageValidation = ValidationUtils.validateImages(selectedImageUris.size)
+        if (!imageValidation.isValid) {
+            Snackbar.make(binding.root, imageValidation.errorMessage ?: "Please add at least one image", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        // Validate required dropdowns
+        if (typeStr.isBlank() || brand.isBlank() || fuelType.isBlank() || transmission.isBlank() || condition.isBlank()) {
+            Snackbar.make(binding.root, "Please fill all required fields", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        // Show progress
+        binding.buttonAddVehicle.isEnabled = false
+        binding.buttonAddVehicle.text = "Saving..."
+
+        // Save images
+        val savedImagePaths = mutableListOf<String>()
+        for (uri in selectedImageUris) {
+            val savedPath = FileManager.saveImageFromUri(uri)
+            if (savedPath != null) {
+                savedImagePaths.add(savedPath)
+            }
+        }
+
+        if (savedImagePaths.isEmpty()) {
+            binding.buttonAddVehicle.isEnabled = true
+            binding.buttonAddVehicle.text = "Add Vehicle"
+            Snackbar.make(binding.root, "Failed to save images. Please try again.", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        // Parse vehicle type
         val type = try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
 
+        // Get current user info
+        val currentUser = com.example.apnivehicle.repository.AuthRepository.getCurrentUser()
+        val sellerId = currentUser?.id ?: ""
+        val sellerPhone = currentUser?.phoneNumber ?: ""
+
+        // Create vehicle
         val vehicle = Vehicle(
             title = title,
-            price = price,
+            price = price!!,
             city = city,
-            year = year,
+            year = year!!,
             type = type,
+            brand = brand,
             fuelType = fuelType,
-            mileage = mileage,
-            imageUri = selectedImageUri?.toString(),
+            transmission = transmission,
+            condition = condition,
+            mileage = mileage!!,
+            imageUri = savedImagePaths[0],
+            imageList = savedImagePaths,
             description = description,
-            isMyAd = true
+            isMyAd = true,
+            sellerId = sellerId,
+            sellerPhone = sellerPhone
         )
 
+        // Add to repository
         VehicleRepository.addVehicle(vehicle)
         NotificationHelper(requireContext()).showVehicleAdded(title)
-        Toast.makeText(requireContext(), "Your ad has been posted successfully!", Toast.LENGTH_LONG).show()
+        
+        Snackbar.make(binding.root, Constants.SUCCESS_VEHICLE_ADDED, Snackbar.LENGTH_LONG).show()
 
+        // Reset form
         clearForm()
+        binding.buttonAddVehicle.isEnabled = true
+        binding.buttonAddVehicle.text = "Add Vehicle"
     }
 
     private fun clearForm() {
         binding.inputTitle.text?.clear()
         binding.inputPrice.text?.clear()
-        binding.inputCity.text?.clear()
+        binding.spinnerCity.text = null
         binding.inputYear.text?.clear()
         binding.inputMileage.text?.clear()
         binding.spinnerType.text = null
+        binding.spinnerBrand.text = null
         binding.spinnerFuel.text = null
+        binding.spinnerTransmission.text = null
+        binding.spinnerCondition.text = null
         binding.inputDescription.text?.clear()
-        binding.ivVehicleImage.setImageResource(R.drawable.ic_car_rental)
-        selectedImageUri = null
+        selectedImageUris.clear()
+        updateImagePreview()
+        
+        // Clear errors
+        binding.textInputLayoutTitle.error = null
+        binding.textInputLayoutPrice.error = null
+        binding.textInputLayoutYear.error = null
+        binding.textInputLayoutMileage.error = null
+        binding.textInputLayoutDescription.error = null
     }
 
     override fun onDestroyView() {

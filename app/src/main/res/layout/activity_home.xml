@@ -17,8 +17,9 @@
             android:id="@+id/toolbar_home"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:logo="@drawable/ic_logo"
             app:title="ApniVehicle"
-            app:titleCentered="true"
+            app:titleMarginStart="8dp"
             app:menu="@menu/menu_toolbar" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -45,7 +46,7 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:layout_gravity="bottom"
         android:background="?attr/colorSurface"
         app:elevation="8dp"

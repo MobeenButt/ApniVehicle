@@ -12,11 +12,19 @@ data class User(
     var avatarUri: String? = null,
     var bio: String = "",
     var isVerified: Boolean = false,
+    var isEmailVerified: Boolean = false,
+    var isPhoneVerified: Boolean = false,
+    var isCnicVerified: Boolean = false,
+    var cnicNumber: String = "",
+    var cnicFrontImage: String? = null,
+    var cnicBackImage: String? = null,
+    var verificationToken: String = "",
     var rating: Float = 5f,
     var reviewCount: Int = 0,
     var totalListings: Int = 0,
     var totalSold: Int = 0,
     var responseTime: Int = 0,
+    var lastResponseTime: Long = 0,
     val createdAt: Long = System.currentTimeMillis()
 )
 

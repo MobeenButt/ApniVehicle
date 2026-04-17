@@ -32,14 +32,27 @@ class NotificationHelper(private val context: Context) {
 
     fun showVehicleAdded(title: String) {
         showNotification(101, "Vehicle Added", "$title has been posted.")
+        AppNotificationManager.incrementNotificationCount(context)
     }
 
     fun showVehicleDeleted(title: String) {
         showNotification(102, "Vehicle Deleted", "$title has been removed.")
+        AppNotificationManager.incrementNotificationCount(context)
     }
 
     fun showFavoriteAdded(title: String) {
         showNotification(103, "Favorite Added", "$title saved to favorites.")
+        AppNotificationManager.incrementNotificationCount(context)
+    }
+
+    fun showBatteryLowNotification(batteryLevel: Int) {
+        showNotification(104, "Battery Low", "Battery level is at $batteryLevel%. Consider charging your device.")
+        AppNotificationManager.incrementNotificationCount(context)
+    }
+
+    fun showSystemNotification(title: String, message: String, notificationId: Int = 105) {
+        showNotification(notificationId, title, message)
+        AppNotificationManager.incrementNotificationCount(context)
     }
 
     @SuppressLint("MissingPermission")

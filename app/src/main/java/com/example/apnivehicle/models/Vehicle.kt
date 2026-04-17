@@ -16,6 +16,7 @@ data class Vehicle(
     var isFavorite: Boolean = false,
     var isMyAd: Boolean = false,
     var sellerId: String = "",  // Link to seller
+    var sellerPhone: String = "",  // Seller's phone number
     var brand: String = title.substringBefore(" ", title),  // Brand/Make
     var model: String = "",  // Model name
     var mileage: Int = 0,  // Mileage in km

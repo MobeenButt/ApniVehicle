@@ -5,15 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioButton
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.apnivehicle.R
 import com.example.apnivehicle.activities.DetailActivity
 import com.example.apnivehicle.adapters.VehicleAdapter
 import com.example.apnivehicle.databinding.FragmentAdvancedSearchBinding
 import com.example.apnivehicle.models.SearchPreference
 import com.example.apnivehicle.repository.VehicleRepository
 import com.example.apnivehicle.utils.ToolbarActionHandler
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.chip.Chip
 
 class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
 
@@ -22,6 +27,7 @@ class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
 
     private lateinit var adapter: VehicleAdapter
     private var currentResults = listOf<String>()
+    private val activeFilters = mutableMapOf<String, String>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,10 +82,7 @@ class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
             setupSpinner(this, fuelTypes)
         }
 
-        binding.spinnerCondition.apply {
-            val conditions = listOf("All") + VehicleRepository.getUniqueConditions()
-            setupSpinner(this, conditions)
-        }
+        // RadioGroup for condition is already in XML - no need to populate
 
         // Set price range limits
         val (minPrice, maxPrice) = VehicleRepository.getPriceRange()
@@ -108,6 +111,33 @@ class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
         binding.buttonSavePreference.setOnClickListener {
             saveSearchPreference()
         }
+        
+        // Listen to RadioGroup changes
+        binding.radioGroupCondition.setOnCheckedChangeListener { _, _ ->
+            updateActiveFilters()
+        }
+        
+        // Listen to spinner changes
+        binding.spinnerBrand.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updateActiveFilters()
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+        
+        binding.spinnerTransmission.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updateActiveFilters()
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+        
+        binding.spinnerFuelType.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updateActiveFilters()
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
     }
 
     private fun performSearch() {
@@ -130,8 +160,8 @@ class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
         val fuelType = if (binding.spinnerFuelType.selectedItem.toString() != "All")
             binding.spinnerFuelType.selectedItem.toString() else null
         
-        val condition = if (binding.spinnerCondition.selectedItem.toString() != "All")
-            binding.spinnerCondition.selectedItem.toString() else null
+        // Get condition from RadioGroup
+        val condition = getSelectedCondition()
 
         val results = VehicleRepository.advancedSearch(
             brand = brand,
@@ -147,7 +177,100 @@ class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
 
         currentResults = results.map { it.id }
         loadResults()
+        updateActiveFilters()
         Toast.makeText(requireContext(), "Found ${results.size} vehicles", Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun getSelectedCondition(): String? {
+        return when (binding.radioGroupCondition.checkedRadioButtonId) {
+            R.id.radio_new -> "New"
+            R.id.radio_used -> "Used"
+            R.id.radio_certified -> "Certified"
+            else -> null // All
+        }
+    }
+    
+    private fun updateActiveFilters() {
+        activeFilters.clear()
+        
+        // Add brand filter
+        val brand = binding.spinnerBrand.selectedItem.toString()
+        if (brand != "All Brands") {
+            activeFilters["Brand"] = brand
+        }
+        
+        // Add model filter
+        val model = binding.inputModel.text.toString().trim()
+        if (model.isNotEmpty()) {
+            activeFilters["Model"] = model
+        }
+        
+        // Add transmission filter
+        val transmission = binding.spinnerTransmission.selectedItem.toString()
+        if (transmission != "All") {
+            activeFilters["Transmission"] = transmission
+        }
+        
+        // Add fuel type filter
+        val fuelType = binding.spinnerFuelType.selectedItem.toString()
+        if (fuelType != "All") {
+            activeFilters["Fuel"] = fuelType
+        }
+        
+        // Add condition filter from RadioGroup
+        val condition = getSelectedCondition()
+        if (condition != null) {
+            activeFilters["Condition"] = condition
+        }
+        
+        // Update FlexboxLayout with chips
+        updateFilterChips()
+    }
+    
+    private fun updateFilterChips() {
+        binding.flexboxFilters.removeAllViews()
+        
+        if (activeFilters.isEmpty()) {
+            binding.textActiveFiltersLabel.visibility = View.GONE
+            binding.flexboxFilters.visibility = View.GONE
+            return
+        }
+        
+        binding.textActiveFiltersLabel.visibility = View.VISIBLE
+        binding.flexboxFilters.visibility = View.VISIBLE
+        
+        activeFilters.forEach { (key, value) ->
+            val chip = Chip(requireContext()).apply {
+                text = "$key: $value"
+                isCloseIconVisible = true
+                setChipBackgroundColorResource(R.color.primary)
+                setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                
+                // Add margin
+                val params = FlexboxLayout.LayoutParams(
+                    FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                    FlexboxLayout.LayoutParams.WRAP_CONTENT
+                )
+                params.setMargins(8, 4, 8, 4)
+                layoutParams = params
+                
+                setOnCloseIconClickListener {
+                    removeFilter(key)
+                }
+            }
+            binding.flexboxFilters.addView(chip)
+        }
+    }
+    
+    private fun removeFilter(filterKey: String) {
+        when (filterKey) {
+            "Brand" -> binding.spinnerBrand.setSelection(0)
+            "Model" -> binding.inputModel.text?.clear()
+            "Transmission" -> binding.spinnerTransmission.setSelection(0)
+            "Fuel" -> binding.spinnerFuelType.setSelection(0)
+            "Condition" -> binding.radioGroupCondition.check(R.id.radio_all_condition)
+        }
+        updateActiveFilters()
     }
 
     private fun loadResults() {
@@ -181,8 +304,8 @@ class AdvancedSearchFragment : Fragment(), ToolbarActionHandler {
         val fuelType = if (binding.spinnerFuelType.selectedItem.toString() != "All")
             binding.spinnerFuelType.selectedItem.toString() else ""
         
-        val condition = if (binding.spinnerCondition.selectedItem.toString() != "All")
-            binding.spinnerCondition.selectedItem.toString() else ""
+        // Get condition from RadioGroup
+        val condition = getSelectedCondition() ?: ""
 
         val preference = SearchPreference(
             name = name,
