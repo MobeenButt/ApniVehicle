@@ -16,6 +16,7 @@ import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.ActivityHomeBinding
 import com.example.apnivehicle.fragments.AddVehicleFragment
 import com.example.apnivehicle.fragments.AdvancedSearchFragment
+import com.example.apnivehicle.fragments.AnalyticsFragment
 import com.example.apnivehicle.fragments.ComparisonFragment
 import com.example.apnivehicle.fragments.FavoriteFragment
 import com.example.apnivehicle.fragments.HomeFragment
@@ -158,6 +159,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             R.id.action_toggle_layout -> toolbarHandler?.onToolbarToggleLayout()
             R.id.action_filter -> toolbarHandler?.onToolbarFilter()
             R.id.action_advanced_search -> openFragment(AdvancedSearchFragment(), "Advanced Search")
+            R.id.action_analytics -> openFragment(AnalyticsFragment(), "Analytics Dashboard")
             R.id.action_favorites -> openFragment(FavoriteFragment(), "Favorite Vehicles")
             R.id.action_user_profile -> openFragment(UserProfileFragment(), "My Profile")
             R.id.action_comparison -> openFragment(ComparisonFragment(), "Compare Vehicles")

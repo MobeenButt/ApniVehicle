@@ -13,6 +13,7 @@ import com.example.apnivehicle.adapters.VehicleAdapter
 import com.example.apnivehicle.databinding.FragmentFavoriteBinding
 import com.example.apnivehicle.dialogs.VehicleDialogs
 import com.example.apnivehicle.repository.VehicleRepository
+import com.example.apnivehicle.utils.AnalyticsManager
 import com.example.apnivehicle.utils.NotificationHelper
 import com.example.apnivehicle.utils.ToolbarActionHandler
 
@@ -42,8 +43,12 @@ class FavoriteFragment : Fragment(), ToolbarActionHandler {
                 startActivity(Intent(requireContext(), DetailActivity::class.java).putExtra(DetailActivity.EXTRA_VEHICLE_ID, vehicle.id))
             },
             onFavoriteClick = { vehicle ->
-                VehicleRepository.toggleFavorite(vehicle.id)
-                NotificationHelper(requireContext()).showFavoriteAdded(vehicle.title)
+                VehicleRepository.toggleFavorite(vehicle.id)?.let {
+                    // Track favorite analytics
+                    AnalyticsManager.trackFavorite(requireContext(), vehicle.id, it.isFavorite)
+                    
+                    NotificationHelper(requireContext()).showFavoriteAdded(vehicle.title)
+                }
                 loadVehicles()
             }
         )

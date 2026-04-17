@@ -15,6 +15,7 @@ import com.example.apnivehicle.databinding.FragmentHomeBinding
 import com.example.apnivehicle.dialogs.VehicleDialogs
 import com.example.apnivehicle.models.VehicleType
 import com.example.apnivehicle.repository.VehicleRepository
+import com.example.apnivehicle.utils.AnalyticsManager
 import com.example.apnivehicle.utils.NotificationHelper
 import com.example.apnivehicle.utils.ToolbarActionHandler
 
@@ -47,6 +48,9 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
             },
             onFavoriteClick = { vehicle ->
                 VehicleRepository.toggleFavorite(vehicle.id)?.let {
+                    // Track favorite analytics
+                    AnalyticsManager.trackFavorite(requireContext(), vehicle.id, it.isFavorite)
+                    
                     if (it.isFavorite) NotificationHelper(requireContext()).showFavoriteAdded(it.title)
                 }
                 loadVehicles()

@@ -12,6 +12,7 @@ import com.example.apnivehicle.adapters.ImagePagerAdapter
 import com.example.apnivehicle.databinding.ActivityDetailBinding
 import com.example.apnivehicle.repository.AuthRepository
 import com.example.apnivehicle.repository.VehicleRepository
+import com.example.apnivehicle.utils.AnalyticsManager
 import com.example.apnivehicle.utils.NotificationHelper
 import com.google.android.material.tabs.TabLayoutMediator
 import java.text.NumberFormat
@@ -47,9 +48,10 @@ class DetailActivity : AppCompatActivity() {
                 return
             }
 
-            // Increment view count
+            // Increment view count and track analytics
             try {
                 VehicleRepository.incrementViewCount(vehicle.id)
+                AnalyticsManager.trackVehicleView(this, vehicle.id)
             } catch (e: Exception) {
                 android.util.Log.e("DetailActivity", "Error incrementing view count", e)
             }
@@ -184,6 +186,9 @@ class DetailActivity : AppCompatActivity() {
                     val phoneNumber = getSellerPhoneNumber(vehicle)
                     
                     if (!phoneNumber.isNullOrBlank()) {
+                        // Track contact click
+                        AnalyticsManager.trackContactClick(this@DetailActivity, vehicle.id)
+                        
                         // Open SMS app with seller's phone number
                         val smsIntent = Intent(Intent.ACTION_VIEW).apply {
                             data = Uri.parse("sms:$phoneNumber")
@@ -222,6 +227,9 @@ class DetailActivity : AppCompatActivity() {
                     val phoneNumber = getSellerPhoneNumber(vehicle)
                     
                     if (!phoneNumber.isNullOrBlank()) {
+                        // Track contact click
+                        AnalyticsManager.trackContactClick(this@DetailActivity, vehicle.id)
+                        
                         // Open phone dialer with seller's phone number
                         val dialIntent = Intent(Intent.ACTION_DIAL).apply {
                             data = Uri.parse("tel:$phoneNumber")

@@ -39,6 +39,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_analytics"
+        android:title="Analytics Dashboard"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_favorites"
         android:title="Favorite Vehicles"
         app:showAsAction="never" />
