@@ -48,6 +48,14 @@ class SettingsFragment : Fragment() {
         if (currentUser != null) {
             binding.textUserEmail.text = "Email: ${currentUser.email}"
             binding.textUsername.text = "Username: ${currentUser.username}"
+            
+            // Show verification status
+            val verificationStatus = when {
+                currentUser.isVerified -> "✓ Verified Seller"
+                currentUser.isEmailVerified || currentUser.isPhoneVerified || currentUser.isCnicVerified -> "Partially Verified"
+                else -> "Not Verified"
+            }
+            binding.textUserEmail.text = "${binding.textUserEmail.text}\nStatus: $verificationStatus"
         }
     }
     

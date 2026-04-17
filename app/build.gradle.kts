@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.gson)
     implementation(libs.androidx.security.crypto)
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

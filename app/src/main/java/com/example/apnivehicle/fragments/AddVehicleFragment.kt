@@ -233,6 +233,11 @@ class AddVehicleFragment : Fragment() {
         // Parse vehicle type
         val type = try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
 
+        // Get current user info
+        val currentUser = com.example.apnivehicle.repository.AuthRepository.getCurrentUser()
+        val sellerId = currentUser?.id ?: ""
+        val sellerPhone = currentUser?.phoneNumber ?: ""
+
         // Create vehicle
         val vehicle = Vehicle(
             title = title,
@@ -248,7 +253,9 @@ class AddVehicleFragment : Fragment() {
             imageUri = savedImagePaths[0],
             imageList = savedImagePaths,
             description = description,
-            isMyAd = true
+            isMyAd = true,
+            sellerId = sellerId,
+            sellerPhone = sellerPhone
         )
 
         // Add to repository

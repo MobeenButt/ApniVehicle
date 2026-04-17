@@ -42,6 +42,14 @@ class NotificationHelper(private val context: Context) {
         showNotification(103, "Favorite Added", "$title saved to favorites.")
     }
 
+    fun showBatteryLowNotification(batteryLevel: Int) {
+        showNotification(104, "Battery Low", "Battery level is at $batteryLevel%. Consider charging your device.")
+    }
+
+    fun showSystemNotification(title: String, message: String, notificationId: Int = 105) {
+        showNotification(notificationId, title, message)
+    }
+
     @SuppressLint("MissingPermission")
     private fun showNotification(notificationId: Int, title: String, body: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&

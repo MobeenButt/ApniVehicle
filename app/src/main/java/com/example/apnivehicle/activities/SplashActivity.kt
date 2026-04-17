@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import com.example.apnivehicle.databinding.ActivitySplashBinding
 import com.example.apnivehicle.repository.AuthRepository
@@ -32,29 +32,35 @@ class SplashActivity : AppCompatActivity() {
         VehicleRepository.init(this)
         preferenceManager = PreferenceManager(this)
         
-        // Animate logo
-        animateLogo()
+        // Animate car as loading indicator
+        animateCarLoading()
 
         Handler(Looper.getMainLooper()).postDelayed({
             navigateToNextScreen()
-        }, 2000)
+        }, 3000)
     }
     
-    private fun animateLogo() {
-        binding.ivLogo.alpha = 0f
-        binding.tvTagline.alpha = 0f
+    private fun animateCarLoading() {
+        // Make everything visible immediately
+        binding.tvAppName.alpha = 1f
+        binding.tvTagline.alpha = 1f
+        binding.tvVersion.alpha = 1f
         
-        ObjectAnimator.ofFloat(binding.ivLogo, View.ALPHA, 0f, 1f).apply {
-            duration = 1000
-            interpolator = AccelerateDecelerateInterpolator()
-            start()
-        }
-        
-        ObjectAnimator.ofFloat(binding.tvTagline, View.ALPHA, 0f, 1f).apply {
-            duration = 1000
-            startDelay = 500
-            interpolator = AccelerateDecelerateInterpolator()
-            start()
+        // Calculate the distance the car needs to travel
+        binding.loadingContainer.post {
+            val containerWidth = binding.loadingContainer.width.toFloat()
+            val carWidth = binding.ivLogo.width.toFloat()
+            val travelDistance = containerWidth - carWidth - 64 // 64 for margins
+            
+            // Start car at the left edge
+            binding.ivLogo.translationX = 0f
+            
+            // Animate car moving from left to right smoothly (representing loading progress)
+            ObjectAnimator.ofFloat(binding.ivLogo, View.TRANSLATION_X, 0f, travelDistance).apply {
+                duration = 3000 // Match the splash duration
+                interpolator = LinearInterpolator() // Smooth constant speed
+                start()
+            }
         }
     }
     

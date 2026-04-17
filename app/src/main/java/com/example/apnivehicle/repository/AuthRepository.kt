@@ -30,6 +30,7 @@ object AuthRepository {
         } else {
             // Add sample users for testing
             users.add(User(
+                id = "test-user-id",
                 email = "test@example.com",
                 username = "testuser",
                 password = "Test@123",
@@ -37,6 +38,7 @@ object AuthRepository {
                 location = "Lahore"
             ))
             users.add(User(
+                id = "demo-user-id",
                 email = "demo@example.com",
                 username = "demouser",
                 password = "Demo@123",
@@ -60,6 +62,10 @@ object AuthRepository {
     fun isUserLoggedIn(): Boolean = currentUser != null
     
     fun getCurrentUser(): User? = currentUser
+    
+    fun getUserById(userId: String): User? {
+        return users.find { it.id == userId }
+    }
     
     fun signup(email: String, username: String, password: String, phoneNumber: String = ""): Result<User> {
         return try {

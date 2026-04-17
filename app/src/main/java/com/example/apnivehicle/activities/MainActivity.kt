@@ -20,12 +20,15 @@ import com.example.apnivehicle.fragments.MyAdsFragment
 import com.example.apnivehicle.fragments.SearchFragment
 import com.example.apnivehicle.fragments.SettingsFragment
 import com.example.apnivehicle.fragments.UserProfileFragment
+import com.example.apnivehicle.receivers.SystemBroadcastReceiver
 import com.example.apnivehicle.utils.ToolbarActionHandler
 import com.google.android.material.navigation.NavigationBarView
 
 class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
 
     private lateinit var binding: ActivityHomeBinding
+    private var systemReceiver: SystemBroadcastReceiver? = null
+    
     private val destinations: Map<Int, Pair<() -> Fragment, Int>> = mapOf(
         R.id.nav_home to ( { HomeFragment() } to R.string.nav_home ),
         R.id.nav_used_cars to ( { SearchFragment() } to R.string.nav_used_cars ),
@@ -41,6 +44,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
         requestNotificationPermissionIfNeeded()
         setSupportActionBar(binding.toolbarHome)
+
+        // Register BroadcastReceiver for system events (optional - won't crash if fails)
+        systemReceiver = SystemBroadcastReceiver.register(this)
 
         binding.bottomNavigation.setOnItemSelectedListener(this)
         
@@ -120,5 +126,11 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             .beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister BroadcastReceiver to prevent memory leaks
+        SystemBroadcastReceiver.unregister(this, systemReceiver)
     }
 }
