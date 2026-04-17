@@ -1,0 +1,31 @@
+[33mcommit 788c7ba793f74494f1f95027a3540c51b76a7226[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Merge: 6cfdbdf a2aadca
+Author: MobeenButt <mobeen914butt@gmail.com>
+Date:   Sat Apr 18 03:16:43 2026 +0500
+
+    Merge branch 'dev'
+
+[33mcommit a2aadcad6ca0ca04374e2c1e32537650251e0e3f[m[33m ([m[1;31morigin/mobeen[m[33m, [m[1;31morigin/dev[m[33m, [m[1;32mmobeen[m[33m, [m[1;32mdev[m[33m)[m
+Author: MobeenButt <mobeen914butt@gmail.com>
+Date:   Sat Apr 18 03:13:45 2026 +0500
+
+    Fix the responsiveness and Call/Message system Intent Issue
+
+[33mcommit 6cfdbdf56ed7b7e3f80d45389698737149440152[m
+Merge: 07f7028 09dc6ab
+Author: MobeenButt <mobeen914butt@gmail.com>
+Date:   Sat Apr 18 00:20:54 2026 +0500
+
+    Resolved merge conflict by removing .idea files
+
+[33mcommit 09dc6ab51b959f2f51f5cc1cef24c12ee8c79323[m
+Author: MobeenButt <mobeen914butt@gmail.com>
+Date:   Sat Apr 18 00:12:27 2026 +0500
+
+    fix layout issues
+
+[33mcommit 95bdeda63f0439f69fdb57b042f6ee3d4c1a627c[m
+Author: MobeenButt <mobeen914butt@gmail.com>
+Date:   Sat Apr 11 17:38:10 2026 +0500
+
+    Add compare and setting pages and fix layout issues in home page
