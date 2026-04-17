@@ -2,9 +2,12 @@ package com.example.apnivehicle.activities
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
@@ -21,17 +24,19 @@ import com.example.apnivehicle.fragments.SearchFragment
 import com.example.apnivehicle.fragments.SettingsFragment
 import com.example.apnivehicle.fragments.UserProfileFragment
 import com.example.apnivehicle.receivers.SystemBroadcastReceiver
+import com.example.apnivehicle.utils.AppNotificationManager
 import com.example.apnivehicle.utils.ToolbarActionHandler
 import com.google.android.material.navigation.NavigationBarView
 
-class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListener, AppNotificationManager.NotificationCountListener {
 
     private lateinit var binding: ActivityHomeBinding
     private var systemReceiver: SystemBroadcastReceiver? = null
+    private var notificationBadge: TextView? = null
     
     private val destinations: Map<Int, Pair<() -> Fragment, Int>> = mapOf(
         R.id.nav_home to ( { HomeFragment() } to R.string.nav_home ),
-        R.id.nav_used_cars to ( { SearchFragment() } to R.string.nav_used_cars ),
+        R.id.nav_favorites to ( { FavoriteFragment() } to R.string.nav_favorites ),
         R.id.nav_new_cars to ( { AddVehicleFragment() } to R.string.nav_new_cars ),
         R.id.nav_bikes to ( { MyAdsFragment() } to R.string.nav_bikes ),
         R.id.nav_more to ( { SettingsFragment() } to R.string.nav_more )
@@ -39,24 +44,33 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityHomeBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        requestNotificationPermissionIfNeeded()
-        setSupportActionBar(binding.toolbarHome)
-
-        // Register BroadcastReceiver for system events (optional - won't crash if fails)
-        systemReceiver = SystemBroadcastReceiver.register(this)
-
-        binding.bottomNavigation.setOnItemSelectedListener(this)
         
-        binding.fabPostAd.setOnClickListener {
-            binding.bottomNavigation.selectedItemId = R.id.nav_new_cars
-        }
+        try {
+            binding = ActivityHomeBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            binding.bottomNavigation.selectedItemId = R.id.nav_home
-            openFragment(HomeFragment(), getString(R.string.nav_home))
+            requestNotificationPermissionIfNeeded()
+            setSupportActionBar(binding.toolbarHome)
+
+            // Register notification listener
+            AppNotificationManager.addListener(this)
+
+            // Temporarily disable SystemBroadcastReceiver to prevent crashes
+            // systemReceiver = SystemBroadcastReceiver.register(this)
+
+            binding.bottomNavigation.setOnItemSelectedListener(this)
+            
+            binding.fabPostAd.setOnClickListener {
+                binding.bottomNavigation.selectedItemId = R.id.nav_new_cars
+            }
+
+            if (savedInstanceState == null) {
+                binding.bottomNavigation.selectedItemId = R.id.nav_home
+                openFragment(HomeFragment(), getString(R.string.nav_home))
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Error in onCreate", e)
+            android.widget.Toast.makeText(this, "Error loading app", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -90,7 +104,48 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             }
         })
         
+        // Setup notification badge
+        val notificationItem = menu.findItem(R.id.action_notifications)
+        setupNotificationBadge(notificationItem)
+        
         return true
+    }
+    
+    private fun setupNotificationBadge(menuItem: MenuItem) {
+        val actionView = menuItem.actionView ?: run {
+            // Create action view if it doesn't exist
+            val view = layoutInflater.inflate(R.layout.notification_badge_layout, null)
+            menuItem.actionView = view
+            view
+        }
+        
+        notificationBadge = actionView.findViewById(R.id.notification_badge)
+        val iconView = actionView.findViewById<View>(R.id.notification_icon)
+        
+        // Set click listener on the action view
+        actionView.setOnClickListener {
+            onOptionsItemSelected(menuItem)
+        }
+        
+        // Update badge with current count
+        updateNotificationBadge(AppNotificationManager.getNotificationCount(this))
+    }
+    
+    private fun updateNotificationBadge(count: Int) {
+        notificationBadge?.let { badge ->
+            if (count > 0) {
+                badge.visibility = View.VISIBLE
+                badge.text = if (count > 99) "99+" else count.toString()
+            } else {
+                badge.visibility = View.GONE
+            }
+        }
+    }
+    
+    override fun onNotificationCountChanged(count: Int) {
+        runOnUiThread {
+            updateNotificationBadge(count)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -103,6 +158,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
             R.id.action_toggle_layout -> toolbarHandler?.onToolbarToggleLayout()
             R.id.action_filter -> toolbarHandler?.onToolbarFilter()
             R.id.action_advanced_search -> openFragment(AdvancedSearchFragment(), "Advanced Search")
+            R.id.action_favorites -> openFragment(FavoriteFragment(), "Favorite Vehicles")
             R.id.action_user_profile -> openFragment(UserProfileFragment(), "My Profile")
             R.id.action_comparison -> openFragment(ComparisonFragment(), "Compare Vehicles")
             else -> return super.onOptionsItemSelected(item)
@@ -111,7 +167,11 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     }
 
     private fun showNotifications() {
-        // TODO: Implement notifications
+        // Clear notification count when user views notifications
+        AppNotificationManager.clearNotificationCount(this)
+        
+        // TODO: Show notifications list/dialog
+        android.widget.Toast.makeText(this, "Notifications cleared", android.widget.Toast.LENGTH_SHORT).show()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -130,7 +190,9 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
     
     override fun onDestroy() {
         super.onDestroy()
+        // Unregister notification listener
+        AppNotificationManager.removeListener(this)
         // Unregister BroadcastReceiver to prevent memory leaks
-        SystemBroadcastReceiver.unregister(this, systemReceiver)
+        // SystemBroadcastReceiver.unregister(this, systemReceiver)
     }
 }

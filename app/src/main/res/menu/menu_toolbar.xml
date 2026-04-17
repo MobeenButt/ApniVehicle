@@ -11,9 +11,9 @@
 
     <item
         android:id="@+id/action_notifications"
-        android:icon="@drawable/ic_notifications"
         android:title="Notifications"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always"
+        app:actionLayout="@layout/notification_badge_layout" />
 
     <item
         android:id="@+id/action_sort"
@@ -36,6 +36,11 @@
     <item
         android:id="@+id/action_advanced_search"
         android:title="Advanced Search"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_favorites"
+        android:title="Favorite Vehicles"
         app:showAsAction="never" />
 
     <item

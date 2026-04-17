@@ -4,25 +4,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_margin="6dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="8dp">
 
         <ImageView
             android:id="@+id/image_vehicle"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
-            app:layout_constraintDimensionRatio="16:9"
+            android:contentDescription="@string/cd_vehicle_image"
+            app:layout_constraintDimensionRatio="4:3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@drawable/ic_car_rental" />
+
+        <!-- Favorite Icon Overlay on Image -->
+        <ImageView
+            android:id="@+id/icon_favorite"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_margin="8dp"
+            android:background="@android:color/white"
+            android:elevation="4dp"
+            android:padding="6dp"
+            android:contentDescription="@string/cd_favorite"
+            app:layout_constraintEnd_toEndOf="@id/image_vehicle"
+            app:layout_constraintTop_toTopOf="@id/image_vehicle"
+            app:srcCompat="@drawable/ic_favorite" />
 
         <TextView
             android:id="@+id/text_title"
@@ -31,8 +47,10 @@
             android:layout_marginTop="8dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textSize="16sp"
+            android:minHeight="40dp"
+            android:textSize="14sp"
             android:textStyle="bold"
+            android:textColor="@color/text_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/image_vehicle"
@@ -44,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textColor="@color/primary"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -55,9 +73,10 @@
             android:id="@+id/text_city"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
             android:textColor="@color/text_secondary"
-            android:textSize="14sp"
+            android:textSize="12sp"
             app:layout_constraintEnd_toStartOf="@id/text_year"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
             app:layout_constraintStart_toStartOf="parent"
@@ -69,31 +88,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_secondary"
-            android:textSize="14sp"
+            android:textSize="12sp"
             app:layout_constraintBaseline_toBaselineOf="@id/text_city"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/text_city"
             tools:text="2020" />
-
-        <ImageView
-            android:id="@+id/icon_favorite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginTop="8dp"
-            android:contentDescription="@string/cd_favorite"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_city"
-            app:srcCompat="@drawable/ic_favorite" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_edit"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:text="@string/button_edit"
+            android:textSize="12sp"
             android:visibility="gone"
             app:layout_constraintEnd_toStartOf="@id/button_delete"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_city"
             tools:visibility="visible" />
 
@@ -102,14 +117,18 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:minWidth="0dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:text="@string/button_delete"
+            android:textSize="12sp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/button_edit"
             app:layout_constraintTop_toBottomOf="@id/text_city"
             tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

@@ -5,6 +5,7 @@
     <string name="drawer_close">Close navigation drawer</string>
 
     <string name="cd_favorite">Favorite</string>
+    <string name="cd_vehicle_image">Vehicle image</string>
 
     <!-- Drawer menu -->
     <string name="menu_home">Home</string>
@@ -58,6 +59,7 @@
 
     <!-- Bottom navigation -->
     <string name="nav_home">Home</string>
+    <string name="nav_favorites">Favorites</string>
     <string name="nav_used_cars">Search</string>
     <string name="nav_new_cars">Sell</string>
     <string name="nav_bikes">My Ads</string>

@@ -125,10 +125,16 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
     override fun onToolbarToggleLayout() {
         isGridLayout = !isGridLayout
         binding.recyclerVehicles.layoutManager = if (isGridLayout) {
-            GridLayoutManager(requireContext(), 2)
+            GridLayoutManager(requireContext(), 2).apply {
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int): Int = 1
+                }
+            }
         } else {
             LinearLayoutManager(requireContext())
         }
+        // Refresh adapter to apply layout changes
+        adapter.notifyDataSetChanged()
     }
 
     override fun onToolbarFilter() {
