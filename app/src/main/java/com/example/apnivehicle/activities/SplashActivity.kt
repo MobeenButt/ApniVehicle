@@ -20,24 +20,41 @@ class SplashActivity : AppCompatActivity() {
     private lateinit var preferenceManager: PreferenceManager
     
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply theme before super.onCreate
-        ThemeManager.applyTheme(this)
-        
-        super.onCreate(savedInstanceState)
-        binding = ActivitySplashBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        try {
+            // Apply theme before super.onCreate
+            ThemeManager.applyTheme(this)
+            
+            super.onCreate(savedInstanceState)
+            binding = ActivitySplashBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        // Initialize repositories and file manager
-        AuthRepository.init(this)
-        VehicleRepository.init(this)
-        preferenceManager = PreferenceManager(this)
-        
-        // Animate car as loading indicator
-        animateCarLoading()
+            // Initialize repositories and file manager
+            try {
+                AuthRepository.init(this)
+                VehicleRepository.init(this)
+                preferenceManager = PreferenceManager(this)
+            } catch (e: Exception) {
+                android.util.Log.e("SplashActivity", "Error initializing repositories", e)
+                // Continue anyway with default values
+                preferenceManager = PreferenceManager(this)
+            }
+            
+            // Animate car as loading indicator
+            animateCarLoading()
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            navigateToNextScreen()
-        }, 3000)
+            Handler(Looper.getMainLooper()).postDelayed({
+                navigateToNextScreen()
+            }, 3000)
+        } catch (e: Exception) {
+            android.util.Log.e("SplashActivity", "Fatal error in onCreate", e)
+            // Try to navigate to login as fallback
+            try {
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            } catch (ex: Exception) {
+                android.util.Log.e("SplashActivity", "Cannot recover from crash", ex)
+            }
+        }
     }
     
     private fun animateCarLoading() {

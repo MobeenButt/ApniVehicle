@@ -17,12 +17,39 @@
             app:contentScrim="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
+            <!-- ViewPager2 for multiple images -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/image_view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                app:layout_collapseMode="parallax" />
+
+            <!-- Single image view (fallback) -->
             <ImageView
                 android:id="@+id/image_vehicle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
+                android:contentDescription="@string/cd_vehicle_image"
                 app:layout_collapseMode="parallax" />
+
+            <!-- Image indicator for multiple images -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/image_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:background="@android:color/transparent"
+                android:visibility="gone"
+                app:tabBackground="@drawable/bg_tab_indicator"
+                app:tabGravity="center"
+                app:tabIndicatorHeight="0dp"
+                app:tabMaxWidth="8dp"
+                app:tabMinWidth="8dp"
+                app:tabPaddingEnd="4dp"
+                app:tabPaddingStart="4dp" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
