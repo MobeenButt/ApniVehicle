@@ -417,9 +417,29 @@ object VehicleRepository {
         Log.d(TAG, "Vehicle deleted: $vehicleId")
     }
 
-    fun updateVehicle(updatedVehicle: Vehicle) {
+    fun updateVehicle(updatedVehicle: Vehicle, context: Context? = null) {
         val index = vehicles.indexOfFirst { it.id == updatedVehicle.id }
         if (index != -1) {
+            val oldVehicle = vehicles[index]
+            
+            // Check for price drop
+            if (updatedVehicle.price < oldVehicle.price) {
+                // Record price change
+                updatedVehicle.priceHistory.addAll(oldVehicle.priceHistory)
+                updatedVehicle.priceHistory.add(PriceRecord(updatedVehicle.price))
+                
+                // Send price drop broadcast if vehicle is favorited and context is available
+                if (updatedVehicle.isFavorite && context != null) {
+                    com.example.apnivehicle.receivers.PriceDropBroadcastReceiver.sendPriceDropAlert(
+                        context,
+                        updatedVehicle.id,
+                        oldVehicle.price,
+                        updatedVehicle.price
+                    )
+                    Log.d(TAG, "Price drop alert sent for ${updatedVehicle.title}: ${oldVehicle.price} -> ${updatedVehicle.price}")
+                }
+            }
+            
             vehicles[index] = updatedVehicle
             saveVehicles()
             Log.d(TAG, "Vehicle updated: ${updatedVehicle.title}")

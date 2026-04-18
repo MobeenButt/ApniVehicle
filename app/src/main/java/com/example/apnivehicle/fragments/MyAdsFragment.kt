@@ -42,7 +42,7 @@ class MyAdsFragment : Fragment() {
             },
             onEditClick = { vehicle ->
                 VehicleDialogs.showEditVehicleDialog(requireContext(), vehicle) { updated ->
-                    VehicleRepository.updateVehicle(updated)
+                    VehicleRepository.updateVehicle(updated, requireContext())
                     loadVehicles()
                 }
             },

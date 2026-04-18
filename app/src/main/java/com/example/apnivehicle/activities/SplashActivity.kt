@@ -1,400 +1,334 @@
 package com.example.apnivehicle.activities
 
-import android.animation.*
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
-import android.view.animation.*
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.OvershootInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import com.example.apnivehicle.databinding.ActivitySplashBinding
 import com.example.apnivehicle.repository.AuthRepository
 import com.example.apnivehicle.repository.VehicleRepository
 import com.example.apnivehicle.utils.PreferenceManager
-import com.example.apnivehicle.utils.ThemeManager
-import kotlin.random.Random
 
 class SplashActivity : AppCompatActivity() {
     
-    private lateinit var binding: ActivitySplashBinding
-    private lateinit var preferenceManager: PreferenceManager
-    private val particles = mutableListOf<View>()
+    private var _binding: ActivitySplashBinding? = null
+    private val binding get() = _binding!!
+    
+    private var preferenceManager: PreferenceManager? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private val splashDuration = 3000L // 3 seconds
     
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
         try {
-            // Apply theme before super.onCreate
-            ThemeManager.applyTheme(this)
-            
-            super.onCreate(savedInstanceState)
-            binding = ActivitySplashBinding.inflate(layoutInflater)
+            _binding = ActivitySplashBinding.inflate(layoutInflater)
             setContentView(binding.root)
-
-            // Initialize repositories
+            
+            Log.d("SplashActivity", "Splash screen started")
+            
+            // Initialize repositories in background
+            initializeApp()
+            
+            // Start animations
+            startAnimations()
+            
+            // Navigate after splash duration
+            handler.postDelayed({
+                navigateToNextScreen()
+            }, splashDuration)
+            
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error in onCreate", e)
+            // Fallback: navigate immediately
+            handler.postDelayed({ navigateToLogin() }, 1000)
+        }
+    }
+    
+    private fun initializeApp() {
+        Thread {
             try {
+                // Initialize repositories
                 AuthRepository.init(this)
                 VehicleRepository.init(this)
                 preferenceManager = PreferenceManager(this)
+                
+                Log.d("SplashActivity", "App initialized successfully")
             } catch (e: Exception) {
-                android.util.Log.e("SplashActivity", "Error initializing repositories", e)
-                preferenceManager = PreferenceManager(this)
+                Log.e("SplashActivity", "Error initializing app", e)
+                runOnUiThread {
+                    try {
+                        preferenceManager = PreferenceManager(this)
+                    } catch (ex: Exception) {
+                        Log.e("SplashActivity", "Failed to create PreferenceManager", ex)
+                    }
+                }
             }
+        }.start()
+    }
+    
+    private fun startAnimations() {
+        try {
+            // 1. Animate logo card - scale in with bounce
+            animateLogoCard()
             
-            // Collect all particle views
-            particles.addAll(listOf(
-                binding.particle1, binding.particle2, binding.particle3, binding.particle4,
-                binding.particle5, binding.particle6, binding.particle7, binding.particle8
-            ))
+            // 2. Animate app name - fade in and slide up
+            animateAppName()
             
-            // Start the magical animation sequence
-            startMagicalAnimations()
-
-            Handler(Looper.getMainLooper()).postDelayed({
-                navigateToNextScreen()
-            }, 3500)
+            // 3. Animate tagline - fade in and slide up
+            animateTagline()
+            
+            // 4. Animate progress bar
+            animateProgressBar()
+            
+            // 5. Animate loading text
+            animateLoadingText()
+            
+            // 6. Animate version text
+            animateVersionText()
+            
         } catch (e: Exception) {
-            android.util.Log.e("SplashActivity", "Fatal error in onCreate", e)
-            try {
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            } catch (ex: Exception) {
-                android.util.Log.e("SplashActivity", "Cannot recover from crash", ex)
-            }
+            Log.e("SplashActivity", "Error in animations", e)
         }
     }
     
-    private fun startMagicalAnimations() {
-        // 1. Animate background gradient
-        animateBackgroundGradient()
-        
-        // 2. Animate floating particles
-        animateFloatingParticles()
-        
-        // 3. Animate rotating glow ring
-        animateGlowRing()
-        
-        // 4. Animate pulsing heart with logo
-        animatePulsingHeart()
-        
-        // 5. Animate text elements
-        animateTextElements()
-        
-        // 6. Animate progress bar
-        animateProgressBar()
-        
-        // 7. Animate bouncing car
-        animateBouncingCar()
-    }
-    
-    private fun animateBackgroundGradient() {
-        val colorAnimation = ValueAnimator.ofArgb(
-            Color.parseColor("#1E88E5"),
-            Color.parseColor("#1565C0"),
-            Color.parseColor("#0D47A1"),
-            Color.parseColor("#1565C0"),
-            Color.parseColor("#1E88E5")
-        )
-        colorAnimation.duration = 3500
-        colorAnimation.addUpdateListener { animator ->
-            binding.root.setBackgroundColor(animator.animatedValue as Int)
-        }
-        colorAnimation.start()
-    }
-    
-    private fun animateFloatingParticles() {
-        particles.forEachIndexed { index, particle ->
-            // Random starting position
-            val startX = Random.nextFloat() * resources.displayMetrics.widthPixels
-            val startY = Random.nextFloat() * resources.displayMetrics.heightPixels
+    private fun animateLogoCard() {
+        try {
+            // Start invisible and small
+            binding.logoCard.alpha = 0f
+            binding.logoCard.scaleX = 0.3f
+            binding.logoCard.scaleY = 0.3f
             
-            particle.x = startX
-            particle.y = startY
+            // Animate to visible and full size with bounce
+            binding.logoCard.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(800)
+                .setStartDelay(200)
+                .setInterpolator(OvershootInterpolator(1.5f))
+                .start()
+                
+            // Subtle pulse animation
+            handler.postDelayed({
+                if (!isFinishing) {
+                    createPulseAnimation()
+                }
+            }, 1200)
             
-            // Delayed start for each particle
-            Handler(Looper.getMainLooper()).postDelayed({
-                // Fade in
-                particle.animate()
-                    .alpha(0.8f)
-                    .setDuration(500)
-                    .start()
-                
-                // Float animation
-                val floatAnimator = createFloatingAnimation(particle, startX, startY)
-                floatAnimator.start()
-                
-                // Twinkle effect
-                createTwinkleAnimation(particle).start()
-            }, (index * 150).toLong())
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error animating logo", e)
         }
     }
     
-    private fun createFloatingAnimation(view: View, startX: Float, startY: Float): AnimatorSet {
-        val displayMetrics = resources.displayMetrics
-        val endX = Random.nextFloat() * displayMetrics.widthPixels
-        val endY = Random.nextFloat() * displayMetrics.heightPixels
-        
-        val animX = ObjectAnimator.ofFloat(view, View.X, startX, endX)
-        val animY = ObjectAnimator.ofFloat(view, View.Y, startY, endY)
-        
-        val set = AnimatorSet()
-        set.playTogether(animX, animY)
-        set.duration = 3000 + Random.nextLong(1000)
-        set.interpolator = AccelerateDecelerateInterpolator()
-        
-        set.doOnEnd {
-            // Loop the animation
-            if (!isFinishing) {
-                createFloatingAnimation(view, endX, endY).start()
+    private fun createPulseAnimation() {
+        try {
+            val scaleX = ObjectAnimator.ofFloat(binding.logoCard, View.SCALE_X, 1f, 1.05f, 1f)
+            val scaleY = ObjectAnimator.ofFloat(binding.logoCard, View.SCALE_Y, 1f, 1.05f, 1f)
+            
+            val animatorSet = AnimatorSet()
+            animatorSet.playTogether(scaleX, scaleY)
+            animatorSet.duration = 1000
+            animatorSet.interpolator = AccelerateDecelerateInterpolator()
+            animatorSet.start()
+            
+            animatorSet.doOnEnd {
+                if (!isFinishing) {
+                    handler.postDelayed({ createPulseAnimation() }, 500)
+                }
             }
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error in pulse animation", e)
         }
-        
-        return set
     }
     
-    private fun createTwinkleAnimation(view: View): ObjectAnimator {
-        val twinkle = ObjectAnimator.ofFloat(view, View.ALPHA, 0.3f, 1f, 0.3f)
-        twinkle.duration = 1500 + Random.nextLong(1000)
-        twinkle.repeatCount = ValueAnimator.INFINITE
-        twinkle.repeatMode = ValueAnimator.REVERSE
-        return twinkle
-    }
-    
-    private fun animateGlowRing() {
-        // Fade in
-        binding.glowRing.animate()
-            .alpha(0.6f)
-            .setDuration(800)
-            .setStartDelay(200)
-            .start()
-        
-        // Rotate continuously
-        val rotation = ObjectAnimator.ofFloat(binding.glowRing, View.ROTATION, 0f, 360f)
-        rotation.duration = 3000
-        rotation.repeatCount = ValueAnimator.INFINITE
-        rotation.interpolator = LinearInterpolator()
-        rotation.start()
-        
-        // Pulse scale
-        val scaleX = ObjectAnimator.ofFloat(binding.glowRing, View.SCALE_X, 1f, 1.1f, 1f)
-        scaleX.duration = 2000
-        scaleX.repeatCount = ValueAnimator.INFINITE
-        scaleX.interpolator = AccelerateDecelerateInterpolator()
-        
-        val scaleY = ObjectAnimator.ofFloat(binding.glowRing, View.SCALE_Y, 1f, 1.1f, 1f)
-        scaleY.duration = 2000
-        scaleY.repeatCount = ValueAnimator.INFINITE
-        scaleY.interpolator = AccelerateDecelerateInterpolator()
-        
-        val scaleSet = AnimatorSet()
-        scaleSet.playTogether(scaleX, scaleY)
-        scaleSet.start()
-    }
-    
-    private fun animatePulsingHeart() {
-        // Heart glow fade in and pulse
-        binding.heartGlow.animate()
-            .alpha(0.8f)
-            .setDuration(600)
-            .setStartDelay(400)
-            .start()
-        
-        val glowPulse = ObjectAnimator.ofFloat(binding.heartGlow, View.ALPHA, 0.4f, 0.9f, 0.4f)
-        glowPulse.duration = 1500
-        glowPulse.repeatCount = ValueAnimator.INFINITE
-        glowPulse.interpolator = AccelerateDecelerateInterpolator()
-        glowPulse.startDelay = 400
-        glowPulse.start()
-        
-        // Logo scale in with bounce
-        binding.ivLogo.animate()
-            .alpha(1f)
-            .scaleX(1f)
-            .scaleY(1f)
-            .setDuration(800)
-            .setStartDelay(500)
-            .setInterpolator(OvershootInterpolator(2f))
-            .start()
-        
-        // Heartbeat pulse
-        Handler(Looper.getMainLooper()).postDelayed({
-            createHeartbeatAnimation().start()
-        }, 1300)
-    }
-    
-    private fun createHeartbeatAnimation(): AnimatorSet {
-        // First beat
-        val beat1ScaleX = ObjectAnimator.ofFloat(binding.ivLogo, View.SCALE_X, 1f, 1.15f, 1f)
-        val beat1ScaleY = ObjectAnimator.ofFloat(binding.ivLogo, View.SCALE_Y, 1f, 1.15f, 1f)
-        val beat1 = AnimatorSet()
-        beat1.playTogether(beat1ScaleX, beat1ScaleY)
-        beat1.duration = 150
-        
-        // Second beat
-        val beat2ScaleX = ObjectAnimator.ofFloat(binding.ivLogo, View.SCALE_X, 1f, 1.1f, 1f)
-        val beat2ScaleY = ObjectAnimator.ofFloat(binding.ivLogo, View.SCALE_Y, 1f, 1.1f, 1f)
-        val beat2 = AnimatorSet()
-        beat2.playTogether(beat2ScaleX, beat2ScaleY)
-        beat2.duration = 150
-        
-        // Combine beats
-        val heartbeat = AnimatorSet()
-        heartbeat.playSequentially(beat1, beat2)
-        heartbeat.startDelay = 800
-        heartbeat.interpolator = AccelerateDecelerateInterpolator()
-        
-        heartbeat.doOnEnd {
-            if (!isFinishing) {
-                Handler(Looper.getMainLooper()).postDelayed({
-                    createHeartbeatAnimation().start()
-                }, 800)
-            }
+    private fun animateAppName() {
+        try {
+            binding.tvAppName.alpha = 0f
+            binding.tvAppName.translationY = 50f
+            
+            binding.tvAppName.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(600)
+                .setStartDelay(600)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error animating app name", e)
         }
-        
-        return heartbeat
     }
     
-    private fun animateTextElements() {
-        // App name - slide up and fade in
-        binding.tvAppName.translationY = 50f
-        binding.tvAppName.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setDuration(800)
-            .setStartDelay(800)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
-        
-        // Tagline - slide up and fade in
-        binding.tvTagline.translationY = 50f
-        binding.tvTagline.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setDuration(800)
-            .setStartDelay(1000)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
-        
-        // Progress container - fade in
-        binding.progressContainer.animate()
-            .alpha(1f)
-            .setDuration(600)
-            .setStartDelay(1200)
-            .start()
-        
-        // Version - fade in
-        binding.tvVersion.animate()
-            .alpha(1f)
-            .setDuration(600)
-            .setStartDelay(1400)
-            .start()
+    private fun animateTagline() {
+        try {
+            binding.tvTagline.alpha = 0f
+            binding.tvTagline.translationY = 30f
+            
+            binding.tvTagline.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(600)
+                .setStartDelay(800)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error animating tagline", e)
+        }
     }
     
     private fun animateProgressBar() {
-        Handler(Looper.getMainLooper()).postDelayed({
-            val displayMetrics = resources.displayMetrics
-            val containerWidth = displayMetrics.widthPixels - (48 * 2 * displayMetrics.density).toInt()
+        try {
+            binding.loadingContainer.alpha = 0f
             
-            val progressAnim = ValueAnimator.ofInt(0, containerWidth)
-            progressAnim.duration = 2000
-            progressAnim.interpolator = AccelerateDecelerateInterpolator()
-            progressAnim.addUpdateListener { animator ->
-                val params = binding.progressBar.layoutParams
-                params.width = animator.animatedValue as Int
-                binding.progressBar.layoutParams = params
-            }
-            progressAnim.start()
+            // Fade in the container
+            binding.loadingContainer.animate()
+                .alpha(1f)
+                .setDuration(400)
+                .setStartDelay(1000)
+                .start()
             
-            // Animate loading text
-            animateLoadingText()
-        }, 1200)
+            // Animate progress from 0 to 100
+            handler.postDelayed({
+                if (!isFinishing) {
+                    val progressAnimator = ValueAnimator.ofInt(0, 100)
+                    progressAnimator.duration = splashDuration - 1200
+                    progressAnimator.addUpdateListener { animator ->
+                        try {
+                            binding.progressBar.progress = animator.animatedValue as Int
+                        } catch (e: Exception) {
+                            Log.e("SplashActivity", "Error updating progress", e)
+                        }
+                    }
+                    progressAnimator.start()
+                }
+            }, 1200)
+            
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error animating progress bar", e)
+        }
     }
     
     private fun animateLoadingText() {
-        val texts = listOf(
-            "Loading your journey...",
-            "Preparing vehicles...",
-            "Almost ready...",
-            "Welcome!"
-        )
-        
-        var currentIndex = 0
-        val handler = Handler(Looper.getMainLooper())
-        
-        val runnable = object : Runnable {
-            override fun run() {
-                if (currentIndex < texts.size && !isFinishing) {
-                    binding.tvLoading.animate()
-                        .alpha(0f)
-                        .setDuration(200)
-                        .withEndAction {
-                            binding.tvLoading.text = texts[currentIndex]
+        try {
+            val loadingTexts = listOf(
+                "Initializing...",
+                "Loading vehicles...",
+                "Preparing app...",
+                "Almost ready..."
+            )
+            
+            var currentIndex = 0
+            val textChangeInterval = 700L
+            
+            val textRunnable = object : Runnable {
+                override fun run() {
+                    if (!isFinishing && currentIndex < loadingTexts.size) {
+                        try {
                             binding.tvLoading.animate()
-                                .alpha(1f)
+                                .alpha(0f)
                                 .setDuration(200)
+                                .withEndAction {
+                                    try {
+                                        binding.tvLoading.text = loadingTexts[currentIndex]
+                                        binding.tvLoading.animate()
+                                            .alpha(1f)
+                                            .setDuration(200)
+                                            .start()
+                                    } catch (e: Exception) {
+                                        Log.e("SplashActivity", "Error changing text", e)
+                                    }
+                                }
                                 .start()
+                            
+                            currentIndex++
+                            handler.postDelayed(this, textChangeInterval)
+                        } catch (e: Exception) {
+                            Log.e("SplashActivity", "Error in text animation", e)
                         }
-                        .start()
-                    
-                    currentIndex++
-                    handler.postDelayed(this, 700)
+                    }
                 }
             }
+            
+            handler.postDelayed(textRunnable, 1200)
+            
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error animating loading text", e)
         }
-        
-        handler.postDelayed(runnable, 500)
     }
     
-    private fun animateBouncingCar() {
-        binding.bouncingCar.animate()
-            .alpha(1f)
-            .setDuration(600)
-            .setStartDelay(1600)
-            .withEndAction {
-                createBounceAnimation().start()
-            }
-            .start()
-    }
-    
-    private fun createBounceAnimation(): AnimatorSet {
-        val bounce = ObjectAnimator.ofFloat(binding.bouncingCar, View.TRANSLATION_Y, 0f, -30f, 0f)
-        bounce.duration = 800
-        bounce.interpolator = BounceInterpolator()
-        
-        val rotate = ObjectAnimator.ofFloat(binding.bouncingCar, View.ROTATION, -5f, 5f, -5f)
-        rotate.duration = 800
-        rotate.interpolator = AccelerateDecelerateInterpolator()
-        
-        val set = AnimatorSet()
-        set.playTogether(bounce, rotate)
-        
-        set.doOnEnd {
-            if (!isFinishing) {
-                Handler(Looper.getMainLooper()).postDelayed({
-                    createBounceAnimation().start()
-                }, 400)
-            }
+    private fun animateVersionText() {
+        try {
+            binding.tvVersion.alpha = 0f
+            
+            binding.tvVersion.animate()
+                .alpha(1f)
+                .setDuration(400)
+                .setStartDelay(1400)
+                .start()
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error animating version", e)
         }
-        
-        return set
     }
     
     private fun navigateToNextScreen() {
-        // Fade out animation before navigation
-        binding.root.animate()
-            .alpha(0f)
-            .setDuration(500)
-            .withEndAction {
-                val nextActivity = when {
-                    preferenceManager.isFirstLaunch -> OnboardingActivity::class.java
-                    AuthRepository.isUserLoggedIn() -> MainActivity::class.java
-                    else -> LoginActivity::class.java
+        try {
+            // Fade out animation
+            binding.root.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction {
+                    try {
+                        val nextActivity = when {
+                            preferenceManager?.isFirstLaunch == true -> OnboardingActivity::class.java
+                            AuthRepository.isUserLoggedIn() -> MainActivity::class.java
+                            else -> LoginActivity::class.java
+                        }
+                        
+                        Log.d("SplashActivity", "Navigating to: ${nextActivity.simpleName}")
+                        
+                        startActivity(Intent(this, nextActivity))
+                        finish()
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    } catch (e: Exception) {
+                        Log.e("SplashActivity", "Error navigating", e)
+                        navigateToLogin()
+                    }
                 }
-                startActivity(Intent(this, nextActivity))
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                finish()
-            }
-            .start()
+                .start()
+                
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error in navigation", e)
+            navigateToLogin()
+        }
+    }
+    
+    private fun navigateToLogin() {
+        try {
+            Log.d("SplashActivity", "Fallback: Navigating to LoginActivity")
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Cannot navigate to login", e)
+            finish()
+        }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            handler.removeCallbacksAndMessages(null)
+            _binding = null
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error in onDestroy", e)
+        }
     }
 }

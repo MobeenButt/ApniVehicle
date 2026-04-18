@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
     private lateinit var binding: ActivityHomeBinding
     private var systemReceiver: SystemBroadcastReceiver? = null
+    private var priceDropReceiver: com.example.apnivehicle.receivers.PriceDropBroadcastReceiver? = null
     private var notificationBadge: TextView? = null
     
     private val destinations: Map<Int, Pair<() -> Fragment, Int>> = mapOf(
@@ -55,6 +56,13 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
 
             // Register notification listener
             AppNotificationManager.addListener(this)
+            
+            // Register Price Drop Broadcast Receiver
+            try {
+                priceDropReceiver = com.example.apnivehicle.receivers.PriceDropBroadcastReceiver.register(this)
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "Error registering price drop receiver", e)
+            }
 
             // Temporarily disable SystemBroadcastReceiver to prevent crashes
             // systemReceiver = SystemBroadcastReceiver.register(this)
@@ -194,6 +202,8 @@ class MainActivity : AppCompatActivity(), NavigationBarView.OnItemSelectedListen
         super.onDestroy()
         // Unregister notification listener
         AppNotificationManager.removeListener(this)
+        // Unregister Price Drop BroadcastReceiver
+        com.example.apnivehicle.receivers.PriceDropBroadcastReceiver.unregister(this, priceDropReceiver)
         // Unregister BroadcastReceiver to prevent memory leaks
         // SystemBroadcastReceiver.unregister(this, systemReceiver)
     }
