@@ -64,12 +64,16 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
     }
 
     private fun setupCategoryFilters() {
-        binding.chipGroupCategories.setOnCheckedStateChangeListener { group, checkedIds ->
+        binding.chipGroupCategories.setOnCheckedStateChangeListener { _, checkedIds ->
             selectedCategory = when (checkedIds.firstOrNull()) {
                 R.id.chip_cars -> VehicleType.CAR
                 R.id.chip_bikes -> VehicleType.MOTORCYCLE
                 R.id.chip_trucks -> VehicleType.TRUCK
+                R.id.chip_buses -> VehicleType.BUS
                 R.id.chip_vans -> VehicleType.VAN
+                R.id.chip_jeeps -> VehicleType.JEEP
+                R.id.chip_rickshaws -> VehicleType.AUTO_RICKSHAW
+                R.id.chip_tractors -> VehicleType.TRACTOR
                 else -> null // "All" or nothing selected
             }
             loadVehicles()
