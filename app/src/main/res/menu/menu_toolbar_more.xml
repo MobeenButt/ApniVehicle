@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <item
+        android:id="@+id/action_filter"
+        android:title="Filter"
+        android:icon="@drawable/ic_filter" />
+    
+    <item
+        android:id="@+id/action_sort"
+        android:title="Sort"
+        android:icon="@drawable/ic_sort" />
+    
+    <item
+        android:id="@+id/action_toggle_layout"
+        android:title="Toggle Layout"
+        android:icon="@drawable/ic_grid" />
+    
+    <item
+        android:id="@+id/action_advanced_search"
+        android:title="Advanced Search" />
+    
+    <item
+        android:id="@+id/action_analytics"
+        android:title="Analytics Dashboard" />
+    
+    <item
+        android:id="@+id/action_favorites"
+        android:title="Favorite Vehicles" />
+    
+    <item
+        android:id="@+id/action_user_profile"
+        android:title="My Profile" />
+    
+    <item
+        android:id="@+id/action_comparison"
+        android:title="Compare Vehicles" />
+    
+</menu>
