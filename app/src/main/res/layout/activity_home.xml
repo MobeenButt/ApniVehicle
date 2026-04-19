@@ -7,20 +7,17 @@
     android:background="?attr/colorSurface"
     tools:context=".activities.MainActivity">
 
+    <!-- App Bar with Custom Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorSurface"
-        app:elevation="2dp">
+        app:elevation="4dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <include
             android:id="@+id/toolbar_home"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:logo="@drawable/ic_logo"
-            app:title="ApniVehicle"
-            app:titleMarginStart="8dp"
-            app:menu="@menu/menu_toolbar" />
+            layout="@layout/custom_toolbar" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -40,16 +37,21 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="80dp"
         android:contentDescription="Post Ad"
-        app:srcCompat="@drawable/ic_add" />
+        app:srcCompat="@drawable/ic_add"
+        app:tint="@android:color/white"
+        app:backgroundTint="@color/primary" />
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="?attr/colorSurface"
         app:elevation="8dp"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@drawable/bottom_nav_color_state"
+        app:itemTextColor="@drawable/bottom_nav_color_state"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
