@@ -33,11 +33,11 @@
 
         <ImageView
             android:id="@+id/ivLogo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:src="@drawable/ic_car_rental"
-            app:tint="@color/primary" />
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_logo" />
 
     </androidx.cardview.widget.CardView>
 

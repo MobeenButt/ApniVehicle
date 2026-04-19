@@ -42,3 +42,6 @@ local.properties
 
 # Gradle wrapper is tracked in git - don't ignore gradle/ directory
 # Only ignore the build cache .gradle/ above
+.gradle/
+build/
+local.properties
