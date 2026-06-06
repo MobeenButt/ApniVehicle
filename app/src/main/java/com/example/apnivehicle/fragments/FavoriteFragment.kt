@@ -26,6 +26,7 @@ class FavoriteFragment : Fragment(), ToolbarActionHandler {
     private var isGridLayout = false
     private var sortOption = VehicleRepository.SortOption.LATEST
     private var searchQuery = ""
+    private var viewCreatedOnce = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,12 +55,13 @@ class FavoriteFragment : Fragment(), ToolbarActionHandler {
         )
         binding.recyclerFavorites.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerFavorites.adapter = adapter
+        viewCreatedOnce = true
         loadVehicles()
     }
 
     override fun onResume() {
         super.onResume()
-        loadVehicles()
+        if (viewCreatedOnce && _binding != null) loadVehicles()
     }
 
     private fun loadVehicles() {
@@ -114,6 +116,7 @@ class FavoriteFragment : Fragment(), ToolbarActionHandler {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewCreatedOnce = false
         _binding = null
     }
 }

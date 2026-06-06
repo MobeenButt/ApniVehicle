@@ -10,13 +10,15 @@ import com.example.apnivehicle.adapters.OnboardingAdapter
 import com.example.apnivehicle.databinding.ActivityOnboardingBinding
 import com.example.apnivehicle.models.OnboardingItem
 import com.example.apnivehicle.utils.PreferenceManager
+import com.example.apnivehicle.utils.setDebouncedClickListener
 import com.google.android.material.tabs.TabLayoutMediator
 
 class OnboardingActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityOnboardingBinding
     private lateinit var preferenceManager: PreferenceManager
-    
+    private var isFinishing = false  // Prevent multiple finishOnboarding() calls
+
     private val onboardingItems = listOf(
         OnboardingItem(
             title = "Find Your Dream Vehicle",
@@ -61,7 +63,8 @@ class OnboardingActivity : AppCompatActivity() {
     }
     
     private fun setupButtons() {
-        binding.btnNext.setOnClickListener {
+        binding.btnNext.setDebouncedClickListener(1000L) {
+            if (isFinishing) return@setDebouncedClickListener
             val currentItem = binding.viewPager.currentItem
             if (currentItem < onboardingItems.size - 1) {
                 binding.viewPager.currentItem = currentItem + 1
@@ -70,7 +73,8 @@ class OnboardingActivity : AppCompatActivity() {
             }
         }
         
-        binding.btnSkip.setOnClickListener {
+        binding.btnSkip.setDebouncedClickListener(1000L) {
+            if (isFinishing) return@setDebouncedClickListener
             finishOnboarding()
         }
     }
@@ -86,8 +90,15 @@ class OnboardingActivity : AppCompatActivity() {
     }
     
     private fun finishOnboarding() {
+        if (isFinishing) return  // Prevent multiple calls
+        isFinishing = true
+
         preferenceManager.isFirstLaunch = false
-        startActivity(Intent(this, LoginActivity::class.java))
+        // Clear the task so pressing back from LoginActivity doesn't return to onboarding
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
         finish()
     }
 }

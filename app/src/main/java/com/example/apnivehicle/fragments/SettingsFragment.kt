@@ -210,13 +210,18 @@ class SettingsFragment : Fragment() {
     }
     
     private fun showLogoutConfirmation() {
-        AlertDialog.Builder(requireContext())
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Logout")
             .setMessage("Are you sure you want to logout?")
             .setPositiveButton("Logout") { _, _ ->
                 AuthRepository.logout()
-                Toast.makeText(requireContext(), Constants.SUCCESS_LOGOUT, Toast.LENGTH_SHORT).show()
-                startActivity(Intent(requireContext(), LoginActivity::class.java))
+                android.widget.Toast.makeText(requireContext(), Constants.SUCCESS_LOGOUT, android.widget.Toast.LENGTH_SHORT).show()
+                // Clear the entire back stack and task so pressing back from LoginActivity
+                // doesn't return to the app after logout.
+                val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
                 requireActivity().finish()
             }
             .setNegativeButton("Cancel", null)

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "604065005415",
+    "project_id": "apnivehicle",
+    "storage_bucket": "apnivehicle.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:604065005415:android:b2ee10ca25e8dd0eecf9c2",
+        "android_client_info": {
+          "package_name": "com.example.apnivehicle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwC8ThOOtDREMNg0zYqwCCL0TOk3sHQRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

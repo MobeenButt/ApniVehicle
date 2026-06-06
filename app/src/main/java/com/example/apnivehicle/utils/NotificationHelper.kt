@@ -31,28 +31,32 @@ class NotificationHelper(private val context: Context) {
     }
 
     fun showVehicleAdded(title: String) {
-        showNotification(101, "Vehicle Added", "$title has been posted.")
-        AppNotificationManager.incrementNotificationCount(context)
+        val msg = "$title has been posted successfully."
+        showNotification(101, "Vehicle Added", msg)
+        AppNotificationManager.addNotification(context, "Vehicle Added", msg)
     }
 
     fun showVehicleDeleted(title: String) {
-        showNotification(102, "Vehicle Deleted", "$title has been removed.")
-        AppNotificationManager.incrementNotificationCount(context)
+        val msg = "$title has been removed from listings."
+        showNotification(102, "Vehicle Deleted", msg)
+        AppNotificationManager.addNotification(context, "Vehicle Deleted", msg)
     }
 
     fun showFavoriteAdded(title: String) {
-        showNotification(103, "Favorite Added", "$title saved to favorites.")
-        AppNotificationManager.incrementNotificationCount(context)
+        val msg = "$title saved to your favorites."
+        showNotification(103, "Favorite Added", msg)
+        AppNotificationManager.addNotification(context, "Favorite Added", msg)
     }
 
     fun showBatteryLowNotification(batteryLevel: Int) {
-        showNotification(104, "Battery Low", "Battery level is at $batteryLevel%. Consider charging your device.")
-        AppNotificationManager.incrementNotificationCount(context)
+        val msg = "Battery level is at $batteryLevel%. Consider charging your device."
+        showNotification(104, "Battery Low", msg)
+        AppNotificationManager.addNotification(context, "Battery Low", msg)
     }
 
     fun showSystemNotification(title: String, message: String, notificationId: Int = 105) {
         showNotification(notificationId, title, message)
-        AppNotificationManager.incrementNotificationCount(context)
+        AppNotificationManager.addNotification(context, title, message)
     }
 
     @SuppressLint("MissingPermission")

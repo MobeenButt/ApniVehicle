@@ -31,6 +31,8 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
     private var selectedCategory: VehicleType? = null
     private var searchQuery = ""
 
+    private var viewCreatedOnce = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -42,6 +44,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewCreatedOnce = true
         adapter = VehicleAdapter(
             onItemClick = { vehicle ->
                 startActivity(Intent(requireContext(), DetailActivity::class.java).putExtra(DetailActivity.EXTRA_VEHICLE_ID, vehicle.id))
@@ -82,7 +85,10 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
 
     override fun onResume() {
         super.onResume()
-        loadVehicles()
+        // onResume fires immediately after onViewCreated on first launch — that would cause a
+        // double loadVehicles(). Only reload here when returning from another screen (i.e. the
+        // view was already created in a previous cycle).
+        if (viewCreatedOnce && _binding != null) loadVehicles()
     }
 
     private fun loadVehicles() {
@@ -154,6 +160,7 @@ class HomeFragment : Fragment(), ToolbarActionHandler {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewCreatedOnce = false
         _binding = null
     }
 }

@@ -7,9 +7,9 @@
         android:title="@string/nav_home" />
 
     <item
-        android:id="@+id/nav_favorites"
-        android:icon="@drawable/ic_favorite"
-        android:title="Favorites" />
+        android:id="@+id/nav_inbox"
+        android:icon="@drawable/ic_chat"
+        android:title="Inbox" />
 
     <item
         android:id="@+id/nav_new_cars"

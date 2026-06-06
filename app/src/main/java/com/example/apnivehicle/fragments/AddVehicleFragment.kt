@@ -1,31 +1,44 @@
 package com.example.apnivehicle.fragments
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.apnivehicle.R
 import com.example.apnivehicle.databinding.FragmentAddVehicleBinding
 import com.example.apnivehicle.models.Vehicle
 import com.example.apnivehicle.models.VehicleType
+import com.example.apnivehicle.repository.AuthRepository
+import com.example.apnivehicle.repository.VehicleDataRepository
 import com.example.apnivehicle.repository.VehicleRepository
 import com.example.apnivehicle.utils.Constants
 import com.example.apnivehicle.utils.FileManager
+import com.example.apnivehicle.utils.NetworkMonitor
 import com.example.apnivehicle.utils.NotificationHelper
 import com.example.apnivehicle.utils.ValidationUtils
+import com.example.apnivehicle.utils.setDebouncedClickListener
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class AddVehicleFragment : Fragment() {
 
     private var _binding: FragmentAddVehicleBinding? = null
     private val binding get() = _binding!!
-    
+
     private val selectedImageUris = mutableListOf<Uri>()
+    private lateinit var vehicleDataRepository: VehicleDataRepository
 
     private val pickImagesLauncher = registerForActivityResult(
         ActivityResultContracts.GetMultipleContents()
@@ -57,10 +70,58 @@ class AddVehicleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
+        vehicleDataRepository = VehicleDataRepository(requireContext())
+
         setupDropdowns()
         setupImagePicker()
         setupSubmitButton()
+        playEntryAnimation()
+
+        // Show offline warning if needed
+        NetworkMonitor.isOnline.observe(viewLifecycleOwner) { online ->
+            val b = _binding ?: return@observe
+            if (b.buttonAddVehicle.text != "Uploading...") {
+                b.buttonAddVehicle.isEnabled = online
+            }
+            if (!online) {
+                Snackbar.make(b.root, "You are offline. Cannot post ad.", Snackbar.LENGTH_LONG).show()
+            }
+        }
+
+        // Load makes from API
+        lifecycleScope.launch {
+            try {
+                val makes = vehicleDataRepository.getMakes()
+                val b = _binding ?: return@launch
+                val makeAdapter = ArrayAdapter(requireContext(), R.layout.list_item, makes)
+                b.spinnerBrand.setAdapter(makeAdapter)
+            } catch (_: Exception) {
+                if (_binding != null) setupDropdowns()
+            }
+        }
+    }
+
+    private fun playEntryAnimation() {
+        val root = _binding?.root ?: return
+        // Stagger each direct child card in
+        val container = (root as? androidx.core.widget.NestedScrollView)
+            ?.getChildAt(0) as? android.widget.LinearLayout ?: return
+
+        for (i in 0 until container.childCount) {
+            val child = container.getChildAt(i)
+            child.alpha = 0f
+            child.translationY = 40f
+            val delay = (i * 60).toLong()
+            val fadeIn = ObjectAnimator.ofFloat(child, "alpha", 0f, 1f).setDuration(350)
+            val slide = ObjectAnimator.ofFloat(child, "translationY", 40f, 0f).setDuration(380)
+            slide.interpolator = DecelerateInterpolator()
+            AnimatorSet().apply {
+                playTogether(fadeIn, slide)
+                startDelay = delay
+                start()
+            }
+        }
     }
 
     private fun setupDropdowns() {
@@ -111,19 +172,29 @@ class AddVehicleFragment : Fragment() {
 
     private fun updateImagePreview() {
         if (selectedImageUris.isNotEmpty()) {
-            binding.ivVehicleImage.setImageURI(selectedImageUris[0])
+            // Clear any tint before Glide loads so the real image is never tinted
+            binding.ivVehicleImage.clearColorFilter()
+            Glide.with(this)
+                .load(selectedImageUris[0])
+                .override(800, 600)
+                .centerCrop()
+                .placeholder(R.drawable.ic_car_rental)
+                .into(binding.ivVehicleImage)
             binding.textImageCount.text = "${selectedImageUris.size} image(s) selected"
             binding.textImageCount.visibility = View.VISIBLE
             binding.btnClearImages.visibility = View.VISIBLE
+            binding.layoutImagePlaceholder.visibility = View.GONE
         } else {
+            binding.ivVehicleImage.clearColorFilter()
             binding.ivVehicleImage.setImageResource(R.drawable.ic_car_rental)
             binding.textImageCount.visibility = View.GONE
             binding.btnClearImages.visibility = View.GONE
+            binding.layoutImagePlaceholder.visibility = View.VISIBLE
         }
     }
 
     private fun setupSubmitButton() {
-        binding.buttonAddVehicle.setOnClickListener {
+        binding.buttonAddVehicle.setDebouncedClickListener(1500L) {
             validateAndSubmit()
         }
     }
@@ -212,62 +283,75 @@ class AddVehicleFragment : Fragment() {
 
         // Show progress
         binding.buttonAddVehicle.isEnabled = false
-        binding.buttonAddVehicle.text = "Saving..."
+        binding.buttonAddVehicle.text = "Uploading..."
+        binding.progressSubmit?.visibility = View.VISIBLE
 
-        // Save images
-        val savedImagePaths = mutableListOf<String>()
-        for (uri in selectedImageUris) {
-            val savedPath = FileManager.saveImageFromUri(uri)
-            if (savedPath != null) {
-                savedImagePaths.add(savedPath)
+        lifecycleScope.launch {
+            try {
+                val uploadedUrls = mutableListOf<String>()
+
+                if (NetworkMonitor.isCurrentlyOnline()) {
+                    // Upload to Firebase Storage
+                    val storage = FirebaseStorage.getInstance()
+                    for (uri in selectedImageUris) {
+                        try {
+                            val ref = storage.reference.child("vehicles/${System.currentTimeMillis()}_${uri.lastPathSegment}")
+                            ref.putFile(uri).await()
+                            val downloadUrl = ref.downloadUrl.await().toString()
+                            uploadedUrls.add(downloadUrl)
+                        } catch (e: Exception) {
+                            android.util.Log.e("AddVehicle", "Storage upload failed, using local", e)
+                            val localPath = FileManager.saveImageFromUri(uri)
+                            if (localPath != null) uploadedUrls.add(localPath)
+                        }
+                    }
+                } else {
+                    // Offline: save locally
+                    for (uri in selectedImageUris) {
+                        val localPath = FileManager.saveImageFromUri(uri)
+                        if (localPath != null) uploadedUrls.add(localPath)
+                    }
+                }
+
+                // Fragment may have been destroyed while we were uploading — check before touching views
+                if (_binding == null) return@launch
+
+                if (uploadedUrls.isEmpty()) {
+                    Snackbar.make(binding.root, "Failed to save images. Please try again.", Snackbar.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val vehicleType = try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
+                val currentUser = AuthRepository.getCurrentUser()
+                val sellerId = currentUser?.id ?: ""
+                val sellerPhone = currentUser?.phoneNumber ?: ""
+
+                val vehicle = Vehicle(
+                    title = title, price = price!!, city = city, year = year!!,
+                    type = vehicleType, brand = brand, fuelType = fuelType,
+                    transmission = transmission, condition = condition, mileage = mileage!!,
+                    imageUri = uploadedUrls[0], imageList = uploadedUrls.toMutableList(),
+                    description = description, isMyAd = true,
+                    sellerId = sellerId, sellerPhone = sellerPhone
+                )
+
+                VehicleRepository.addVehicleAsync(vehicle)
+
+                // Only show UI feedback if fragment is still attached
+                if (_binding != null) {
+                    NotificationHelper(requireContext()).showVehicleAdded(title)
+                    Snackbar.make(binding.root, Constants.SUCCESS_VEHICLE_ADDED, Snackbar.LENGTH_LONG).show()
+                    clearForm()
+                }
+            } finally {
+                // Re-enable button only if view still exists
+                _binding?.let {
+                    it.buttonAddVehicle.isEnabled = true
+                    it.buttonAddVehicle.text = "Post Ad Now"
+                    it.progressSubmit?.visibility = View.GONE
+                }
             }
         }
-
-        if (savedImagePaths.isEmpty()) {
-            binding.buttonAddVehicle.isEnabled = true
-            binding.buttonAddVehicle.text = "Add Vehicle"
-            Snackbar.make(binding.root, "Failed to save images. Please try again.", Snackbar.LENGTH_SHORT).show()
-            return
-        }
-
-        // Parse vehicle type
-        val type = try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
-
-        // Get current user info
-        val currentUser = com.example.apnivehicle.repository.AuthRepository.getCurrentUser()
-        val sellerId = currentUser?.id ?: ""
-        val sellerPhone = currentUser?.phoneNumber ?: ""
-
-        // Create vehicle
-        val vehicle = Vehicle(
-            title = title,
-            price = price!!,
-            city = city,
-            year = year!!,
-            type = type,
-            brand = brand,
-            fuelType = fuelType,
-            transmission = transmission,
-            condition = condition,
-            mileage = mileage!!,
-            imageUri = savedImagePaths[0],
-            imageList = savedImagePaths,
-            description = description,
-            isMyAd = true,
-            sellerId = sellerId,
-            sellerPhone = sellerPhone
-        )
-
-        // Add to repository
-        VehicleRepository.addVehicle(vehicle)
-        NotificationHelper(requireContext()).showVehicleAdded(title)
-        
-        Snackbar.make(binding.root, Constants.SUCCESS_VEHICLE_ADDED, Snackbar.LENGTH_LONG).show()
-
-        // Reset form
-        clearForm()
-        binding.buttonAddVehicle.isEnabled = true
-        binding.buttonAddVehicle.text = "Add Vehicle"
     }
 
     private fun clearForm() {

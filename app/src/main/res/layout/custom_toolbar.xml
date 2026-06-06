@@ -3,28 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="?attr/colorSurface">
+    android:background="?attr/colorSurface"
+    android:elevation="0dp">
 
-    <!-- Container for Logo and Title to keep them together at the left -->
+    <!-- Logo + Title -->
     <LinearLayout
         android:id="@+id/toolbar_title_container"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/toolbar_actions"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Circular Logo Container -->
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
-
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            app:cardCornerRadius="17dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/card_stroke">
             <ImageView
                 android:id="@+id/toolbar_logo"
                 android:layout_width="match_parent"
@@ -34,66 +35,64 @@
                 android:src="@drawable/ic_logo" />
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- App Name -->
         <TextView
             android:id="@+id/toolbar_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="10dp"
             android:ellipsize="end"
             android:fontFamily="sans-serif-medium"
             android:maxLines="1"
             android:text="ApniVehicle"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="20sp"
+            android:textSize="19sp"
             android:textStyle="bold" />
-
     </LinearLayout>
 
-    <!-- Action Icons Container -->
+    <!-- Action Icons -->
     <LinearLayout
         android:id="@+id/toolbar_actions"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:paddingEnd="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Search Icon -->
+        <!-- Search -->
         <ImageButton
             android:id="@+id/action_search"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Search"
             android:src="@drawable/ic_search"
             app:tint="?attr/colorOnSurface" />
 
-        <!-- Notification Icon with Badge -->
+        <!-- Notification with badge -->
         <FrameLayout
             android:id="@+id/action_notifications_container"
-            android:layout_width="48dp"
-            android:layout_height="48dp">
+            android:layout_width="44dp"
+            android:layout_height="44dp">
 
             <ImageButton
                 android:id="@+id/action_notifications"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Notifications"
                 android:src="@drawable/ic_notifications"
                 app:tint="?attr/colorOnSurface" />
 
-            <!-- Notification Badge -->
             <TextView
                 android:id="@+id/notification_badge"
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:layout_gravity="top|end"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="4dp"
                 android:background="@drawable/bg_notification_badge"
                 android:gravity="center"
                 android:text="0"
@@ -101,19 +100,17 @@
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
-
         </FrameLayout>
 
-        <!-- More Options Menu -->
+        <!-- More options -->
         <ImageButton
             android:id="@+id/action_more"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="More options"
             android:src="@drawable/ic_more_vert"
             app:tint="?attr/colorOnSurface" />
-
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,23 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.apnivehicle.databinding.FragmentVerificationBinding
 import com.example.apnivehicle.repository.AuthRepository
 import com.example.apnivehicle.utils.EmailService
-import com.example.apnivehicle.utils.ValidationUtils
 
 class VerificationFragment : Fragment() {
 
     private var _binding: FragmentVerificationBinding? = null
     private val binding get() = _binding!!
     
-    private var emailVerificationCode = ""
-    private var phoneVerificationCode = ""
-    
+    // Email and Phone verification removed - use CNIC verification only
+
     private val pickCnicFrontLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -67,14 +64,6 @@ class VerificationFragment : Fragment() {
     
     private fun updateVerificationStatus(user: com.example.apnivehicle.models.User) {
         binding.apply {
-            // Email verification status
-            tvEmailStatus.text = if (user.isEmailVerified) "✓ Verified" else "Not Verified"
-            btnVerifyEmail.isEnabled = !user.isEmailVerified
-            
-            // Phone verification status
-            tvPhoneStatus.text = if (user.isPhoneVerified) "✓ Verified" else "Not Verified"
-            btnVerifyPhone.isEnabled = !user.isPhoneVerified
-            
             // CNIC verification status
             tvCnicStatus.text = when {
                 user.isCnicVerified -> "✓ Verified"
@@ -84,12 +73,13 @@ class VerificationFragment : Fragment() {
             btnSubmitCnic.isEnabled = !user.isCnicVerified
             
             // Overall verification badge
-            val allVerified = user.isEmailVerified && user.isPhoneVerified && user.isCnicVerified
-            user.isVerified = allVerified
-            tvOverallStatus.text = if (allVerified) {
+            // Note: Email and Phone verification removed - use CNIC only
+            val isVerified = user.isCnicVerified
+            user.isVerified = isVerified
+            tvOverallStatus.text = if (isVerified) {
                 "🎉 You are a Verified Seller!"
             } else {
-                "Complete all verifications to become a Verified Seller"
+                "Complete CNIC verification to become a Verified Seller"
             }
             
             // Show CNIC images if uploaded
@@ -109,16 +99,6 @@ class VerificationFragment : Fragment() {
     
     private fun setupListeners(user: com.example.apnivehicle.models.User) {
         binding.apply {
-            // Email verification
-            btnVerifyEmail.setOnClickListener {
-                sendEmailVerification(user)
-            }
-            
-            // Phone verification
-            btnVerifyPhone.setOnClickListener {
-                sendPhoneVerification(user)
-            }
-            
             // CNIC upload
             btnUploadCnicFront.setOnClickListener {
                 pickCnicFrontLauncher.launch("image/*")
@@ -131,78 +111,6 @@ class VerificationFragment : Fragment() {
             // CNIC submission
             btnSubmitCnic.setOnClickListener {
                 submitCnicVerification(user)
-            }
-        }
-    }
-    
-    private fun sendEmailVerification(user: com.example.apnivehicle.models.User) {
-        emailVerificationCode = EmailService.generateVerificationCode()
-        user.verificationToken = emailVerificationCode
-        
-        EmailService.sendVerificationEmailViaClient(
-            requireContext(),
-            user.email,
-            user.username,
-            emailVerificationCode
-        )
-        
-        Toast.makeText(
-            requireContext(),
-            "Verification email prepared. Please send it.",
-            Toast.LENGTH_LONG
-        ).show()
-        
-        // Show dialog to enter code
-        showVerificationCodeDialog("Email", emailVerificationCode) { enteredCode ->
-            if (enteredCode == emailVerificationCode) {
-                user.isEmailVerified = true
-                AuthRepository.updateUser(user)
-                updateVerificationStatus(user)
-                Toast.makeText(requireContext(), "Email verified successfully!", Toast.LENGTH_SHORT).show()
-                checkAllVerificationsComplete(user)
-            } else {
-                Toast.makeText(requireContext(), "Invalid verification code", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    
-    private fun sendPhoneVerification(user: com.example.apnivehicle.models.User) {
-        if (user.phoneNumber.isEmpty()) {
-            Toast.makeText(requireContext(), "Please add phone number in profile first", Toast.LENGTH_SHORT).show()
-            return
-        }
-        
-        if (!ValidationUtils.isValidPakistanPhone(user.phoneNumber)) {
-            Toast.makeText(requireContext(), "Invalid phone number format", Toast.LENGTH_SHORT).show()
-            return
-        }
-        
-        phoneVerificationCode = EmailService.generateVerificationCode()
-        
-        EmailService.sendPhoneVerificationEmail(
-            requireContext(),
-            user.email,
-            user.username,
-            user.phoneNumber,
-            phoneVerificationCode
-        )
-        
-        Toast.makeText(
-            requireContext(),
-            "Verification code sent to your email",
-            Toast.LENGTH_LONG
-        ).show()
-        
-        // Show dialog to enter code
-        showVerificationCodeDialog("Phone", phoneVerificationCode) { enteredCode ->
-            if (enteredCode == phoneVerificationCode) {
-                user.isPhoneVerified = true
-                AuthRepository.updateUser(user)
-                updateVerificationStatus(user)
-                Toast.makeText(requireContext(), "Phone verified successfully!", Toast.LENGTH_SHORT).show()
-                checkAllVerificationsComplete(user)
-            } else {
-                Toast.makeText(requireContext(), "Invalid verification code", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -259,26 +167,9 @@ class VerificationFragment : Fragment() {
         }
     }
     
-    private fun showVerificationCodeDialog(type: String, correctCode: String, onVerify: (String) -> Unit) {
-        val input = EditText(requireContext()).apply {
-            hint = "Enter 6-digit code"
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-        }
-        
-        AlertDialog.Builder(requireContext())
-            .setTitle("Verify $type")
-            .setMessage("Enter the 6-digit verification code sent to your email")
-            .setView(input)
-            .setPositiveButton("Verify") { _, _ ->
-                val enteredCode = input.text.toString().trim()
-                onVerify(enteredCode)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-    
     private fun checkAllVerificationsComplete(user: com.example.apnivehicle.models.User) {
-        if (user.isEmailVerified && user.isPhoneVerified && user.isCnicVerified) {
+        // After removing email and phone verification, only CNIC matters
+        if (user.isCnicVerified) {
             user.isVerified = true
             AuthRepository.updateUser(user)
             
@@ -290,7 +181,7 @@ class VerificationFragment : Fragment() {
             
             AlertDialog.Builder(requireContext())
                 .setTitle("🎉 Congratulations!")
-                .setMessage("You are now a Verified Seller on ApniVehicle!\n\nYour profile will display a verified badge, and your listings will get higher visibility.")
+                .setMessage("Your CNIC has been verified! You are now a Verified Seller on ApniVehicle!\n\nYour profile will display a verified badge, and your listings will get higher visibility.")
                 .setPositiveButton("Awesome!") { _, _ ->
                     updateVerificationStatus(user)
                 }

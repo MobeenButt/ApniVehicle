@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:elevation="2dp">
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="?attr/colorOnSurface" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Offline banner -->
+        <TextView
+            android:id="@+id/offline_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/warning"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="You are offline — messages cannot be sent"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_messages"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Divider -->
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Message input row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="?attr/colorSurface">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusBottomEnd="24dp"
+                app:boxCornerRadiusBottomStart="24dp"
+                app:boxCornerRadiusTopEnd="24dp"
+                app:boxCornerRadiusTopStart="24dp"
+                app:boxStrokeWidth="1.5dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/input_message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Type a message…"
+                    android:inputType="textMultiLine"
+                    android:maxLines="4"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_send"
+                style="@style/Widget.Material3.Button.Icon"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="8dp"
+                android:contentDescription="Send"
+                app:icon="@drawable/ic_send"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:cornerRadius="23dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,34 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ApniVehicle Professional Design System -->
-    <!-- Primary Colors -->
-    <color name="primary">#1E88E5</color>
-    <color name="primary_dark">#1565C0</color>
-    <color name="accent_cta">#FF6F00</color>
-    
-    <!-- Light Theme -->
-    <color name="background">#F5F5F5</color>
+    <!-- ApniVehicle Professional Design System v2 -->
+
+    <!-- Primary Palette - Deep Blue -->
+    <color name="primary">#1565C0</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="primary_light">#1E88E5</color>
+    <color name="primary_surface">#E3F2FD</color>
+
+    <!-- Accent - Vibrant Orange -->
+    <color name="accent_cta">#FF6D00</color>
+    <color name="accent_light">#FF9E40</color>
+
+    <!-- Light Theme Backgrounds -->
+    <color name="background">#F0F4FF</color>
     <color name="surface_card">#FFFFFF</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    
+    <color name="surface_elevated">#FAFAFA</color>
+
+    <!-- Text -->
+    <color name="text_primary">#0D1B2A</color>
+    <color name="text_secondary">#5A6A7A</color>
+    <color name="text_hint">#9EAAB8</color>
+
     <!-- Dark Theme -->
-    <color name="background_dark">#121212</color>
-    <color name="surface_dark">#1E1E1E</color>
-    <color name="text_primary_dark">#E0E0E0</color>
-    <color name="text_secondary_dark">#9E9E9E</color>
-    
+    <color name="background_dark">#0A0E1A</color>
+    <color name="surface_dark">#151C2E</color>
+    <color name="surface_dark_elevated">#1E2740</color>
+    <color name="text_primary_dark">#E8EEFF</color>
+    <color name="text_secondary_dark">#8A9BBD</color>
+
     <!-- Status Colors -->
-    <color name="success">#4CAF50</color>
-    <color name="error">#F44336</color>
-    <color name="warning">#F39C12</color>
-    
+    <color name="success">#00C853</color>
+    <color name="success_surface">#E8F5E9</color>
+    <color name="error">#D32F2F</color>
+    <color name="error_surface">#FFEBEE</color>
+    <color name="warning">#FF8F00</color>
+    <color name="warning_surface">#FFF8E1</color>
+    <color name="info">#0288D1</color>
+
     <!-- UI Elements -->
-    <color name="divider">#E0E0E0</color>
+    <color name="divider">#E1E8F0</color>
+    <color name="ripple_primary">#201565C0</color>
+    <color name="ripple_white">#40FFFFFF</color>
     <color name="bottom_nav_item_selected">@color/primary</color>
     <color name="bottom_nav_item_unselected">@color/text_secondary</color>
     <color name="button_text_white">#FFFFFF</color>
-    
-    <!-- Price Color -->
-    <color name="price_green">#27AE60</color>
+
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#1565C0</color>
+    <color name="gradient_mid">#1976D2</color>
+    <color name="gradient_end">#0D47A1</color>
+
+    <!-- Price -->
+    <color name="price_green">#00897B</color>
+    <color name="price_surface">#E0F2F1</color>
+
+    <!-- Card Stroke -->
+    <color name="card_stroke">#E8EEF8</color>
+
+    <!-- Notification panel -->
+    <color name="notification_panel_bg">#FFFFFF</color>
+    <color name="notification_item_bg">#F0F4FF</color>
+    <color name="notification_badge_bg">#D32F2F</color>
 </resources>

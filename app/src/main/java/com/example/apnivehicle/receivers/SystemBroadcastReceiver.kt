@@ -4,8 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Build
 import android.util.Log
@@ -37,9 +35,9 @@ class SystemBroadcastReceiver : BroadcastReceiver() {
                     addAction(Intent.ACTION_BATTERY_OKAY)
                     addAction(Intent.ACTION_POWER_CONNECTED)
                     addAction(Intent.ACTION_POWER_DISCONNECTED)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        addAction(ConnectivityManager.CONNECTIVITY_ACTION)
-                    }
+                    // Fix: CONNECTIVITY_ACTION is deprecated since API 28 and unreliable on modern
+                    // Android. The app already uses NetworkMonitor (NetworkCallback) for connectivity
+                    // tracking, so we don't need it here.
                 }
                 context.registerReceiver(receiver, filter)
                 Log.d(TAG, "SystemBroadcastReceiver registered")
@@ -84,10 +82,7 @@ class SystemBroadcastReceiver : BroadcastReceiver() {
                 Intent.ACTION_POWER_DISCONNECTED -> {
                     handlePowerDisconnected(context)
                 }
-                
-                ConnectivityManager.CONNECTIVITY_ACTION -> {
-                    handleConnectivityChange(context)
-                }
+                // CONNECTIVITY_ACTION removed — NetworkMonitor handles connectivity via NetworkCallback
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling broadcast", e)
@@ -121,44 +116,8 @@ class SystemBroadcastReceiver : BroadcastReceiver() {
         Toast.makeText(context, "Charging stopped", Toast.LENGTH_SHORT).show()
     }
 
-    private fun handleConnectivityChange(context: Context) {
-        val isConnected = isNetworkAvailable(context)
-        Log.d(TAG, "Network connectivity changed: $isConnected")
-        
-        val message = if (isConnected) {
-            "Internet connection restored"
-        } else {
-            "No internet connection"
-        }
-        
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
     private fun getBatteryLevel(context: Context): Int {
         val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-    }
-
-    private fun isNetworkAvailable(context: Context): Boolean {
-        return try {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-                ?: return false
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val network = connectivityManager.activeNetwork ?: return false
-                val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            } else {
-                @Suppress("DEPRECATION")
-                val networkInfo = connectivityManager.activeNetworkInfo
-                networkInfo?.isConnected == true
-            }
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Permission denied for network state access", e)
-            false
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking network availability", e)
-            false
-        }
     }
 }

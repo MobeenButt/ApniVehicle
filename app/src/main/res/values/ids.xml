@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Used by ClickDebounceUtil to store last-click timestamp as a View tag.
+         Storing per-View avoids the cross-screen ID collision bug of the old global map. -->
+    <item name="tag_last_click_time" type="id" />
+</resources>

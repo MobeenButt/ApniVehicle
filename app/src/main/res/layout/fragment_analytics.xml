@@ -33,6 +33,7 @@
 
         <!-- Overview Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_overview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -172,6 +173,7 @@
 
         <!-- Performance Score Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_performance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -237,6 +239,7 @@
 
         <!-- Best/Worst Performing Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_top_performers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -308,6 +311,7 @@
 
         <!-- Market Position Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_market_position"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -366,6 +370,7 @@
 
         <!-- Market Trends Card -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_market_trends"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"

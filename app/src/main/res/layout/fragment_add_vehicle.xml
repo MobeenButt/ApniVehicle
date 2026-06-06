@@ -1,310 +1,649 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:fillViewport="true"
-    android:background="@color/background">
+    android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_md">
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="96dp">
 
-        <TextView
+        <!-- ── Page header ─────────────────────────────────────────────── -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Post Your Ad"
-            android:textSize="@dimen/text_size_h1"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="@dimen/spacing_md" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
 
-        <!-- Image Picker Section -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Post Your Ad"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fill in the details to list your vehicle"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Step badge -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/primary_surface"
+                app:strokeWidth="0dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Free Listing"
+                    android:textSize="11sp"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- ── Section 1 : Photos ───────────────────────────────────────── -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/spacing_md"
-            app:cardCornerRadius="@dimen/card_corner_radius"
-            app:cardElevation="@dimen/elevation_card">
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/card_stroke">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:orientation="vertical"
-                android:padding="@dimen/spacing_md">
+                android:padding="16dp">
 
-                <ImageView
-                    android:id="@+id/iv_vehicle_image"
+                <!-- Section label -->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_car_rental"
-                    android:contentDescription="Vehicle Image" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="18dp"
+                        android:background="@color/primary"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Vehicle Photos"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1–8 photos"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <!-- Image preview — 16:9 ratio -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1.5dp"
+                    app:strokeColor="@color/divider">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/iv_vehicle_image"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:adjustViewBounds="true"
+                            android:minHeight="180dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_car_rental"
+                            android:contentDescription="Vehicle Image" />
+
+                        <!-- Tap-to-add overlay when no image selected -->
+                        <LinearLayout
+                            android:id="@+id/layout_image_placeholder"
+                            android:layout_width="match_parent"
+                            android:layout_height="190dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#08000000">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_add"
+                                android:alpha="0.35"
+                                android:contentDescription="Add photos" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tap to add photos"
+                                android:textSize="13sp"
+                                android:textColor="@color/text_secondary"
+                                android:layout_marginTop="6dp" />
+                        </LinearLayout>
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Image count badge -->
                 <TextView
                     android:id="@+id/text_image_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:layout_marginTop="8dp"
+                    android:layout_gravity="center_horizontal"
                     android:text="0 images selected"
-                    android:textSize="@dimen/text_size_caption"
+                    android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:visibility="gone" />
 
+                <!-- Buttons row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:layout_marginTop="@dimen/spacing_sm">
+                    android:layout_marginTop="10dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_select_image"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
                         android:text="Upload Photos"
+                        android:textSize="13sp"
                         app:icon="@drawable/ic_add"
-                        style="@style/Widget.Material3.Button.TonalButton" />
+                        app:cornerRadius="10dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_clear_images"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
                         android:text="Clear"
+                        android:textSize="13sp"
                         android:visibility="gone"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
+                        app:cornerRadius="10dp" />
                 </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xs"
-                    android:text="Add 1-8 images (Required)"
-                    android:textSize="@dimen/text_size_caption"
-                    android:textColor="@color/text_secondary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Category -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layout_type"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        <!-- ── Section 2 : Basic Info ───────────────────────────────────── -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Category *">
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/card_stroke">
 
-            <AutoCompleteTextView
-                android:id="@+id/spinner_type"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <!-- Title -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/text_input_layout_title"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                <!-- Section label -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="14dp">
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="18dp"
+                        android:background="@color/accent_cta"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Basic Information"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <!-- Category -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layout_type"
+                    style="@style/Widget.ApniVehicle.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Category *"
+                    app:endIconMode="dropdown_menu">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/spinner_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Ad Title -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/text_input_layout_title"
+                    style="@style/Widget.ApniVehicle.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Ad Title *"
+                    app:helperText="e.g. Toyota Corolla 2020 1.6 GLi Auto"
+                    app:errorEnabled="true">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/input_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLength="100"
+                        android:imeOptions="actionNext"
+                        android:singleLine="true" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Brand -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.ApniVehicle.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Brand *"
+                    app:endIconMode="dropdown_menu">
+                    <AutoCompleteTextView
+                        android:id="@+id/spinner_brand"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Price -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/text_input_layout_price"
+                    style="@style/Widget.ApniVehicle.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Asking Price *"
+                    app:prefixText="PKR  "
+                    app:errorEnabled="true">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/input_price"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:maxLength="10"
+                        android:imeOptions="actionNext"
+                        android:singleLine="true" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── Section 3 : Location & Year ──────────────────────────────── -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:hint="Ad Title *">
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/card_stroke">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_title"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLength="100" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <!-- Brand -->
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="14dp">
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="18dp"
+                        android:background="@color/success"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Location &amp; Year"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <!-- City | Year side by side -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApniVehicle.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:hint="City *"
+                        app:endIconMode="dropdown_menu">
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_city"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/text_input_layout_year"
+                        style="@style/Widget.ApniVehicle.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:hint="Year *"
+                        app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_year"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="4"
+                            android:imeOptions="actionNext"
+                            android:singleLine="true" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── Section 4 : Vehicle Specs ────────────────────────────────── -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:hint="Brand *">
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/card_stroke">
 
-            <AutoCompleteTextView
-                android:id="@+id/spinner_brand"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <!-- Price -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/text_input_layout_price"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="14dp">
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="18dp"
+                        android:background="@color/warning"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Vehicle Specs"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <!-- KM Driven | Fuel Type -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/text_input_layout_mileage"
+                        style="@style/Widget.ApniVehicle.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:hint="KM Driven *"
+                        app:suffixText="km"
+                        app:errorEnabled="true">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_mileage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="7"
+                            android:imeOptions="actionNext"
+                            android:singleLine="true" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApniVehicle.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:hint="Fuel Type *"
+                        app:endIconMode="dropdown_menu">
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_fuel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Transmission | Condition -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApniVehicle.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:hint="Transmission *"
+                        app:endIconMode="dropdown_menu">
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_transmission"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.ApniVehicle.TextInputLayout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:hint="Condition *"
+                        app:endIconMode="dropdown_menu">
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_condition"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── Section 5 : Description ───────────────────────────────────── -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:hint="Price (PKR) *"
-            app:prefixText="Rs ">
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/card_stroke">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_price"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:maxLength="10" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <LinearLayout
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="14dp">
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="18dp"
+                        android:background="@color/info"
+                        android:layout_marginEnd="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Description"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/text_input_layout_description"
+                    style="@style/Widget.ApniVehicle.TextInputLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Describe your vehicle (min 20 characters) *"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="1000"
+                    app:helperText="Mention condition, accessories, reason for selling…"
+                    app:errorEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/input_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="120dp"
+                        android:gravity="top|start"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:maxLength="1000"
+                        android:scrollbars="vertical" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ── Submit button ─────────────────────────────────────────────── -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
-            <!-- City -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="@dimen/spacing_xs"
-                android:hint="City *">
-
-                <AutoCompleteTextView
-                    android:id="@+id/spinner_city"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Year -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/text_input_layout_year"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="@dimen/spacing_xs"
-                android:hint="Year *">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/input_year"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:maxLength="4" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:orientation="horizontal">
-
-            <!-- Mileage -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/text_input_layout_mileage"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="@dimen/spacing_xs"
-                android:hint="KM Driven *"
-                app:suffixText=" km">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/input_mileage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:maxLength="7" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Fuel Type -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="@dimen/spacing_xs"
-                android:hint="Fuel *">
-
-                <AutoCompleteTextView
-                    android:id="@+id/spinner_fuel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:orientation="horizontal">
-
-            <!-- Transmission -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="@dimen/spacing_xs"
-                android:hint="Transmission *">
-
-                <AutoCompleteTextView
-                    android:id="@+id/spinner_transmission"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Condition -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="@dimen/spacing_xs"
-                android:hint="Condition *">
-
-                <AutoCompleteTextView
-                    android:id="@+id/spinner_condition"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <!-- Description -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/text_input_layout_description"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:hint="Description (Min 20 characters) *"
-            app:counterEnabled="true"
-            app:counterMaxLength="1000">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_description"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_add_vehicle"
+                style="@style/Widget.ApniVehicle.Button.Primary"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:gravity="top"
-                android:inputType="textMultiLine"
-                android:maxLength="1000" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="54dp"
+                android:text="Post Ad Now"
+                android:textSize="16sp"
+                app:icon="@drawable/ic_add"
+                app:iconGravity="textStart"
+                app:cornerRadius="14dp" />
 
-        <!-- Submit Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_add_vehicle"
+            <ProgressBar
+                android:id="@+id/progress_submit"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="#FFFFFF"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <!-- Tips card at the bottom -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/spacing_lg"
-            android:layout_marginBottom="@dimen/spacing_xxl"
-            android:text="Post Ad Now"
-            android:textSize="@dimen/text_size_body" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/primary_surface"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💡 Tips for a great ad"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Add clear photos from multiple angles\n• Set a fair market price\n• Write an honest, detailed description\n• Respond to buyers quickly"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:lineSpacingExtra="4dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

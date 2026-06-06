@@ -26,6 +26,8 @@ class SplashActivity : AppCompatActivity() {
     private var preferenceManager: PreferenceManager? = null
     private val handler = Handler(Looper.getMainLooper())
     private val splashDuration = 3000L // 3 seconds
+    // Fix: track whether init has completed so navigation doesn't fire before repos are ready
+    @Volatile private var initComplete = false
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,25 +57,30 @@ class SplashActivity : AppCompatActivity() {
     }
     
     private fun initializeApp() {
-        Thread {
+        val thread = Thread {
             try {
-                // Initialize repositories
                 AuthRepository.init(this)
                 VehicleRepository.init(this)
                 preferenceManager = PreferenceManager(this)
-                
+                initComplete = true
                 Log.d("SplashActivity", "App initialized successfully")
             } catch (e: Exception) {
                 Log.e("SplashActivity", "Error initializing app", e)
+                // Even on error, create a minimal PreferenceManager so navigation works
                 runOnUiThread {
-                    try {
-                        preferenceManager = PreferenceManager(this)
-                    } catch (ex: Exception) {
-                        Log.e("SplashActivity", "Failed to create PreferenceManager", ex)
+                    try { preferenceManager = PreferenceManager(this) } catch (ex: Exception) {
+                        Log.e("SplashActivity", "PreferenceManager fallback also failed", ex)
                     }
                 }
+                initComplete = true // allow navigation even on error
             }
-        }.start()
+        }
+        // Catch any uncaught exception from the thread so it doesn't silently kill the process
+        thread.uncaughtExceptionHandler = Thread.UncaughtExceptionHandler { _, e ->
+            Log.e("SplashActivity", "Uncaught exception in init thread", e)
+            initComplete = true
+        }
+        thread.start()
     }
     
     private fun startAnimations() {
@@ -281,7 +288,34 @@ class SplashActivity : AppCompatActivity() {
     
     private fun navigateToNextScreen() {
         try {
-            // Fade out animation
+            // Fix: if init thread hasn't finished yet, wait up to 2 extra seconds in 100ms polls
+            // before navigating, so AuthRepository.isUserLoggedIn() returns the correct value.
+            if (!initComplete) {
+                var waited = 0
+                val maxWait = 2000
+                val pollInterval = 100L
+                val waitRunnable = object : Runnable {
+                    override fun run() {
+                        if (initComplete || waited >= maxWait) {
+                            doNavigate()
+                        } else {
+                            waited += pollInterval.toInt()
+                            handler.postDelayed(this, pollInterval)
+                        }
+                    }
+                }
+                handler.post(waitRunnable)
+                return
+            }
+            doNavigate()
+        } catch (e: Exception) {
+            Log.e("SplashActivity", "Error in navigation", e)
+            navigateToLogin()
+        }
+    }
+
+    private fun doNavigate() {
+        try {
             binding.root.animate()
                 .alpha(0f)
                 .setDuration(300)
@@ -292,9 +326,7 @@ class SplashActivity : AppCompatActivity() {
                             AuthRepository.isUserLoggedIn() -> MainActivity::class.java
                             else -> LoginActivity::class.java
                         }
-                        
                         Log.d("SplashActivity", "Navigating to: ${nextActivity.simpleName}")
-                        
                         startActivity(Intent(this, nextActivity))
                         finish()
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
@@ -304,9 +336,8 @@ class SplashActivity : AppCompatActivity() {
                     }
                 }
                 .start()
-                
         } catch (e: Exception) {
-            Log.e("SplashActivity", "Error in navigation", e)
+            Log.e("SplashActivity", "Error in doNavigate", e)
             navigateToLogin()
         }
     }

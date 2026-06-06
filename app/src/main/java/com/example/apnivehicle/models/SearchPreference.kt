@@ -4,7 +4,7 @@ import java.util.UUID
 
 data class SearchPreference(
     val id: String = UUID.randomUUID().toString(),
-    val name: String,
+    val name: String = "",
     val brand: String = "",
     val model: String = "",
     val minPrice: Long = 0L,
@@ -15,6 +15,12 @@ data class SearchPreference(
     val fuelType: String = "",
     val condition: String = "",
     val city: String = "",
+    val alertEnabled: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
-)
-
+) {
+    // No-arg constructor for Firestore
+    constructor() : this(
+        id = UUID.randomUUID().toString(),
+        name = ""
+    )
+}

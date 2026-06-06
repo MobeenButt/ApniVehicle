@@ -35,5 +35,13 @@
     <item
         android:id="@+id/action_comparison"
         android:title="Compare Vehicles" />
-    
+
+    <item
+        android:id="@+id/action_chat"
+        android:title="Messages / Chat" />
+
+    <item
+        android:id="@+id/action_saved_searches"
+        android:title="Saved Searches" />
+
 </menu>

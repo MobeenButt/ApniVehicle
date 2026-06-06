@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
 import com.example.apnivehicle.models.Vehicle
 import com.example.apnivehicle.repository.VehicleRepository
@@ -42,7 +43,13 @@ class PriceDropBroadcastReceiver : BroadcastReceiver() {
                 addAction(ACTION_PRICE_DROP)
                 addAction(ACTION_CHECK_PRICE_DROPS)
             }
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            // Fix: RECEIVER_NOT_EXPORTED was added in API 33 (Android 13).
+            // minSdk is 24, so guard with a version check to avoid crash on older devices.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                context.registerReceiver(receiver, filter)
+            }
             Log.d(TAG, "PriceDropBroadcastReceiver registered")
             return receiver
         }

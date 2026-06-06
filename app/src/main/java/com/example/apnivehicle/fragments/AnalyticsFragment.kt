@@ -103,26 +103,22 @@ class AnalyticsFragment : Fragment() {
     
     private fun showEmptyState() {
         binding.textEmptyAnalytics.visibility = View.VISIBLE
-        // Hide all cards
-        binding.root.findViewById<View>(com.example.apnivehicle.R.id.text_analytics_title)?.parent?.let {
-            if (it is ViewGroup) {
-                for (i in 2 until it.childCount) {
-                    it.getChildAt(i).visibility = View.GONE
-                }
-            }
-        }
+        // Fix: use direct binding references to card IDs instead of fragile index-based traversal.
+        // The old approach broke whenever the layout changed.
+        binding.cardOverview.visibility = View.GONE
+        binding.cardPerformance.visibility = View.GONE
+        binding.cardTopPerformers.visibility = View.GONE
+        binding.cardMarketPosition.visibility = View.GONE
+        binding.cardMarketTrends.visibility = View.GONE
     }
-    
+
     private fun hideEmptyState() {
         binding.textEmptyAnalytics.visibility = View.GONE
-        // Show all cards
-        binding.root.findViewById<View>(com.example.apnivehicle.R.id.text_analytics_title)?.parent?.let {
-            if (it is ViewGroup) {
-                for (i in 2 until it.childCount - 1) { // -1 to exclude empty state text
-                    it.getChildAt(i).visibility = View.VISIBLE
-                }
-            }
-        }
+        binding.cardOverview.visibility = View.VISIBLE
+        binding.cardPerformance.visibility = View.VISIBLE
+        binding.cardTopPerformers.visibility = View.VISIBLE
+        binding.cardMarketPosition.visibility = View.VISIBLE
+        binding.cardMarketTrends.visibility = View.VISIBLE
     }
 
     override fun onResume() {

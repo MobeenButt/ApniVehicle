@@ -1,123 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
-    <!-- Category Chips -->
-    <HorizontalScrollView
-        android:id="@+id/scroll_categories"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:paddingTop="12dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:clipToPadding="false"
-        android:scrollbars="none"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chip_group_categories"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="true"
-            app:singleLine="true">
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:overScrollMode="never">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_all"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="All" />
+                android:orientation="vertical">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_cars"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cars" />
+                <!-- Category chip row -->
+                <HorizontalScrollView
+                    android:id="@+id/scroll_categories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="12dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="4dp"
+                    android:clipToPadding="false"
+                    android:scrollbars="none">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_bikes"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Bikes" />
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chip_group_categories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:chipSpacingHorizontal="6dp">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_trucks"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Trucks" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_all"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="All" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_buses"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Buses" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_cars"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cars" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_vans"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Vans" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_bikes"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Bikes" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_jeeps"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Jeeps" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_trucks"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Trucks" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_rickshaws"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rickshaws" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_buses"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Buses" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_tractors"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tractors" />
-        </com.google.android.material.chip.ChipGroup>
-    </HorizontalScrollView>
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_vans"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Vans" />
 
-    <!-- RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_vehicles"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:clipToPadding="false"
-        android:paddingBottom="12dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scroll_categories" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_jeeps"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Jeeps" />
 
-    <!-- Empty State -->
-    <TextView
-        android:id="@+id/text_empty"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="16dp"
-        android:text="@string/no_vehicles"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_rickshaws"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Rickshaws" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_tractors"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tractors" />
+                    </com.google.android.material.chip.ChipGroup>
+                </HorizontalScrollView>
+
+                <!-- RecyclerView — not scrollable inside NestedScrollView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_vehicles"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:clipToPadding="false"
+                    android:paddingBottom="88dp"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <!-- Empty State — id kept as text_empty for existing HomeFragment binding -->
+                <TextView
+                    android:id="@+id/text_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:drawableTop="@drawable/ic_directions_car"
+                    android:drawablePadding="12dp"
+                    android:padding="40dp"
+                    android:text="@string/no_vehicles"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_secondary"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

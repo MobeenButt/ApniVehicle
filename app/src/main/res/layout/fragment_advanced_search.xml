@@ -1,280 +1,533 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/background">
 
-    <ScrollView
+    <!-- Full-height scrollable layout: filters on top, results below, all in one scroll -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/ns_main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <!-- Title -->
-            <com.google.android.material.textview.MaterialTextView
+            <!-- ── FILTER CARD ─────────────────────────────────────── -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Advanced Search"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="16dp" />
+                android:layout_margin="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/surface_card">
 
-            <!-- Brand Filter -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Brand"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
-
-            <Spinner
-                android:id="@+id/spinner_brand"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="12dp"
-                android:background="@color/surface_card" />
-
-            <!-- Model Filter -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Model"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:boxBackgroundColor="@color/surface_card"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/input_model"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="e.g., Civic, Alto"
-                    android:inputType="text"
-                    android:padding="12dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            <!-- Price Range -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Price Range"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
+                    <!-- Header row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
 
-            <com.google.android.material.slider.RangeSlider
-                android:id="@+id/slider_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:contentDescription="Price Range"
-                app:labelBehavior="floating" />
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_search"
+                            app:tint="@color/primary"
+                            android:layout_marginEnd="8dp"
+                            android:contentDescription="Search" />
 
-            <!-- Mileage Range -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Mileage (km)"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Advanced Search"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
 
-            <com.google.android.material.slider.RangeSlider
-                android:id="@+id/slider_mileage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:contentDescription="Mileage Range"
-                app:labelBehavior="floating" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_reset_filters"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Reset"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            app:icon="@drawable/ic_refresh"
+                            app:iconSize="16dp"
+                            app:iconTint="@color/text_secondary" />
+                    </LinearLayout>
 
-            <!-- Transmission -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Transmission"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
+                    <!-- ── City ──────────────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="City"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp" />
 
-            <Spinner
-                android:id="@+id/spinner_transmission"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="12dp"
-                android:background="@color/surface_card" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_city"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
 
-            <!-- Fuel Type -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Fuel Type"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_city"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Select city"
+                            android:inputType="none"
+                            android:padding="14dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-            <Spinner
-                android:id="@+id/spinner_fuel_type"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginBottom="12dp"
-                android:background="@color/surface_card" />
+                    <!-- ── Brand ─────────────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Brand"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp" />
 
-            <!-- Condition - Using RadioGroup -->
-            <com.google.android.material.textview.MaterialTextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Condition"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_brand"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
 
-            <RadioGroup
-                android:id="@+id/radio_group_condition"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_brand"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Select brand"
+                            android:inputType="none"
+                            android:padding="14dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                <RadioButton
-                    android:id="@+id/radio_all_condition"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="All"
-                    android:checked="true"
-                    android:textColor="@color/text_primary" />
+                    <!-- ── Model ─────────────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Model"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp" />
 
-                <RadioButton
-                    android:id="@+id/radio_new"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="New"
-                    android:textColor="@color/text_primary" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_model"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
 
-                <RadioButton
-                    android:id="@+id/radio_used"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Used"
-                    android:textColor="@color/text_primary" />
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_model"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="e.g. Civic, Alto, Sportage"
+                            android:inputType="text"
+                            android:imeOptions="actionNext"
+                            android:padding="14dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                <RadioButton
-                    android:id="@+id/radio_certified"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Certified"
-                    android:textColor="@color/text_primary" />
-            </RadioGroup>
+                    <!-- ── Price Range ───────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Price Range (PKR)"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="4dp" />
 
-            <!-- Active Filters - Using FlexboxLayout -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/text_active_filters_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Active Filters"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="4dp"
-                android:visibility="gone" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_price_range_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Any price"
+                        android:textSize="13sp"
+                        android:textColor="@color/primary"
+                        android:layout_marginBottom="4dp" />
 
-            <com.google.android.flexbox.FlexboxLayout
-                android:id="@+id/flexbox_filters"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:visibility="gone"
-                app:flexWrap="wrap"
-                app:alignItems="flex_start"
-                app:alignContent="flex_start" />
+                    <com.google.android.material.slider.RangeSlider
+                        android:id="@+id/slider_price"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:contentDescription="Price Range"
+                        app:labelBehavior="gone"
+                        app:thumbColor="@color/primary"
+                        app:trackColorActive="@color/primary"
+                        app:trackColorInactive="@color/text_secondary" />
 
-            <!-- Save Preference -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp"
-                app:boxBackgroundColor="@color/surface_card"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    <!-- ── Year Range ─────────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Year Range"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="4dp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/input_preference_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Save search as... (optional)"
-                    android:inputType="text"
-                    android:padding="12dp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_year_range_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Any year"
+                        android:textSize="13sp"
+                        android:textColor="@color/primary"
+                        android:layout_marginBottom="4dp" />
 
-            <!-- Buttons -->
+                    <com.google.android.material.slider.RangeSlider
+                        android:id="@+id/slider_year"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:contentDescription="Year Range"
+                        app:labelBehavior="gone"
+                        app:thumbColor="@color/primary"
+                        app:trackColorActive="@color/primary"
+                        app:trackColorInactive="@color/text_secondary" />
+
+                    <!-- ── Mileage Range ──────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Mileage (km)"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="4dp" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_mileage_range_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Any mileage"
+                        android:textSize="13sp"
+                        android:textColor="@color/primary"
+                        android:layout_marginBottom="4dp" />
+
+                    <com.google.android.material.slider.RangeSlider
+                        android:id="@+id/slider_mileage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:contentDescription="Mileage Range"
+                        app:labelBehavior="gone"
+                        app:thumbColor="@color/primary"
+                        app:trackColorActive="@color/primary"
+                        app:trackColorInactive="@color/text_secondary" />
+
+                    <!-- ── Transmission ───────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Transmission"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_transmission"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_transmission"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Any transmission"
+                            android:inputType="none"
+                            android:padding="14dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- ── Fuel Type ───────────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Fuel Type"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_fuel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/spinner_fuel_type"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Any fuel type"
+                            android:inputType="none"
+                            android:padding="14dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- ── Condition chips ─────────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Condition"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chip_group_condition"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_condition_all"
+                            style="@style/Widget.MaterialComponents.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="All"
+                            android:checked="true" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_condition_new"
+                            style="@style/Widget.MaterialComponents.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="New" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_condition_used"
+                            style="@style/Widget.MaterialComponents.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Used" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip_condition_certified"
+                            style="@style/Widget.MaterialComponents.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Certified" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <!-- ── Active filter chips ────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_active_filters_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Active Filters"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp"
+                        android:visibility="gone" />
+
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/flexbox_filters"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone"
+                        app:flexWrap="wrap"
+                        app:alignItems="flex_start"
+                        app:alignContent="flex_start" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/text_secondary"
+                        android:alpha="0.15"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- ── Save search section ─────────────────────────── -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Save This Search"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="@color/text_secondary"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_preference_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="@color/primary"
+                        app:hintTextColor="@color/primary"
+                        app:endIconMode="clear_text">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_preference_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="e.g. Budget Cars Lahore"
+                            android:inputType="textCapWords"
+                            android:imeOptions="actionDone"
+                            android:padding="14dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- ── Action buttons ──────────────────────────────── -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="4dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_save_preference"
+                            android:layout_width="0dp"
+                            android:layout_height="52dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="Save Search"
+                            app:icon="@drawable/ic_bookmark"
+                            app:iconSize="18dp"
+                            app:cornerRadius="10dp"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            app:strokeColor="@color/primary"
+                            android:textColor="@color/primary" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_search"
+                            android:layout_width="0dp"
+                            android:layout_height="52dp"
+                            android:layout_weight="1"
+                            android:text="Search"
+                            app:icon="@drawable/ic_search"
+                            app:iconSize="18dp"
+                            app:cornerRadius="10dp"
+                            android:backgroundTint="@color/primary" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── RESULTS SECTION ──────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp">
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="8dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_search"
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_results_count"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Search"
-                    android:layout_marginEnd="8dp"
-                    app:cornerRadius="8dp"
-                    android:backgroundTint="@color/primary" />
+                    android:text="Results will appear here"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_save_preference"
-                    android:layout_width="0dp"
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_sort_label"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Save"
-                    app:cornerRadius="8dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:textColor="@color/primary" />
+                    android:text="Latest"
+                    android:textSize="13sp"
+                    android:textColor="@color/primary"
+                    android:drawablePadding="4dp"
+                    android:paddingStart="8dp" />
             </LinearLayout>
+
+            <!-- Empty state -->
+            <LinearLayout
+                android:id="@+id/layout_empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="48dp"
+                android:visibility="visible">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/text_secondary"
+                    android:alpha="0.4"
+                    android:contentDescription="No results" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_empty_message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Set your filters and tap Search"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="12dp" />
+            </LinearLayout>
+
+            <!-- Results RecyclerView — wrap_content so it grows inside the scroll -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_search_results"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingHorizontal="8dp"
+                android:paddingBottom="80dp"
+                android:visibility="gone" />
+
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
-    <!-- Results -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_search_results"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="8dp" />
-</LinearLayout>
-
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

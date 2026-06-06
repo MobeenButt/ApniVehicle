@@ -169,11 +169,28 @@ object FileManager {
      * @return Saved file path or null if failed
      */
     fun saveImageFromUri(uri: Uri): String? {
+        // Guard: ensure FileManager.init(context) has been called
+        if (!this::context.isInitialized) {
+            Log.e(TAG, "FileManager.saveImageFromUri called before init")
+            return null
+        }
+
         return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-            inputStream?.close()
-            
+            // First pass: decode bounds only to calculate sample size
+            val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            context.contentResolver.openInputStream(uri)?.use { firstStream ->
+                BitmapFactory.decodeStream(firstStream, null, boundsOptions)
+            }
+
+            // Calculate inSampleSize to downsample large images (target max 1920px)
+            val sampleSize = calculateInSampleSize(boundsOptions, 1920, 1920)
+
+            // Second pass: decode with sample size so full-resolution bitmap is never in memory
+            val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+            val bitmap = context.contentResolver.openInputStream(uri)?.use { stream ->
+                BitmapFactory.decodeStream(stream, null, decodeOptions)
+            }
+
             if (bitmap != null) {
                 saveImage(bitmap)
             } else {
@@ -184,6 +201,23 @@ object FileManager {
             Log.e(TAG, "Error saving image from URI", e)
             null
         }
+    }
+
+    /**
+     * Calculate inSampleSize to downsample images larger than requested dimensions.
+     */
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
     }
     
     /**
@@ -215,9 +249,10 @@ object FileManager {
             resizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
             outputStream.flush()
             outputStream.close()
-            
+
             if (resizedBitmap != bitmap) {
                 resizedBitmap.recycle()
+                bitmap.recycle()
             }
             
             val savedPath = imageFile.absolutePath

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp">
+
+    <!-- Icon bubble -->
+    <FrameLayout
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/bg_notification_item">
+        <ImageView
+            android:id="@+id/iv_notif_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_notifications"
+            android:contentDescription="Notification icon" />
+    </FrameLayout>
+
+    <!-- Text content -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="4dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_notif_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_notif_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="2dp"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_notif_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@color/text_hint"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- Dismiss button -->
+    <ImageButton
+        android:id="@+id/btn_dismiss_notif"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_delete"
+        android:contentDescription="Dismiss notification"
+        android:alpha="0.5" />
+
+</LinearLayout>

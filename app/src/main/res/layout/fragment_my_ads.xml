@@ -1,26 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:background="@color/background">
 
+    <!-- Header bar -->
+    <LinearLayout
+        android:id="@+id/header_my_ads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="10dp"
+        android:background="@color/background">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Ads"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_ads_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 active listings"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_my_ads"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:paddingTop="68dp"
+        android:paddingBottom="88dp"
+        android:paddingStart="2dp"
+        android:paddingEnd="2dp"
+        android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-    <TextView
-        android:id="@+id/text_empty"
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/layout_empty_my_ads"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:gravity="center"
-        android:padding="16dp"
-        android:text="@string/no_my_ads"
-        android:visibility="gone" />
+        android:paddingTop="120dp"
+        android:paddingBottom="32dp"
+        android:visibility="gone"
+        app:layout_anchor="@+id/recycler_my_ads"
+        app:layout_anchorGravity="center">
 
-</LinearLayout>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_my_ads"
+            android:alpha="0.25"
+            android:contentDescription="No ads" />
 
+        <TextView
+            android:id="@+id/text_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            android:text="@string/no_my_ads"
+            android:textSize="15sp"
+            android:textColor="@color/text_secondary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_post_first_ad"
+            style="@style/Widget.ApniVehicle.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="46dp"
+            android:layout_marginTop="16dp"
+            android:text="Post Your First Ad"
+            android:textSize="14sp"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
