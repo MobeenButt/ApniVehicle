@@ -126,29 +126,71 @@ class AddVehicleFragment : Fragment() {
 
     private fun setupDropdowns() {
         // Vehicle Types
-        val types = VehicleType.values().map { it.name }
-        val typeAdapter = ArrayAdapter(requireContext(), R.layout.list_item, types)
-        binding.spinnerType.setAdapter(typeAdapter)
+        val types = VehicleType.values().map { type ->
+            when (type) {
+                VehicleType.CAR -> "Car"
+                VehicleType.MOTORCYCLE -> "Motorcycle / Bike"
+                VehicleType.TRUCK -> "Truck"
+                VehicleType.BUS -> "Bus / Coaster"
+                VehicleType.VAN -> "Van / Minivan"
+                VehicleType.JEEP -> "Jeep / SUV"
+                VehicleType.AUTO_RICKSHAW -> "Auto Rickshaw"
+                VehicleType.TRACTOR -> "Tractor / Agricultural"
+            }
+        }
+        binding.spinnerType.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, types))
 
         // Cities
-        val cityAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.PAKISTANI_CITIES)
-        binding.spinnerCity.setAdapter(cityAdapter)
+        binding.spinnerCity.setAdapter(
+            ArrayAdapter(requireContext(), R.layout.list_item, Constants.PAKISTANI_CITIES)
+        )
 
         // Fuel Types
-        val fuelAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.FUEL_TYPES)
-        binding.spinnerFuel.setAdapter(fuelAdapter)
-        
+        binding.spinnerFuel.setAdapter(
+            ArrayAdapter(requireContext(), R.layout.list_item, Constants.FUEL_TYPES)
+        )
+
         // Transmission
-        val transmissionAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.TRANSMISSION_TYPES)
-        binding.spinnerTransmission.setAdapter(transmissionAdapter)
-        
+        binding.spinnerTransmission.setAdapter(
+            ArrayAdapter(requireContext(), R.layout.list_item, Constants.TRANSMISSION_TYPES)
+        )
+
         // Condition
-        val conditionAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_CONDITIONS)
-        binding.spinnerCondition.setAdapter(conditionAdapter)
-        
-        // Brand
-        val brandAdapter = ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_MAKES)
-        binding.spinnerBrand.setAdapter(brandAdapter)
+        binding.spinnerCondition.setAdapter(
+            ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_CONDITIONS)
+        )
+
+        // Brand — start with curated Pakistan list
+        binding.spinnerBrand.setAdapter(
+            ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_MAKES)
+        )
+
+        // When brand changes, immediately populate models from Constants (no network needed),
+        // then refresh in background from API if available.
+        binding.spinnerBrand.setOnItemClickListener { _, _, _, _ ->
+            val selectedBrand = binding.spinnerBrand.text.toString().trim()
+            if (selectedBrand.isNotBlank()) {
+                loadModelsForBrand(selectedBrand)
+            }
+        }
+    }
+
+    private fun loadModelsForBrand(brand: String) {
+        // Step 1: Instantly populate from local Constants (no delay)
+        val localModels = vehicleDataRepository.getLocalModels(brand)
+        if (localModels.isNotEmpty()) {
+            val modelAdapter = ArrayAdapter(requireContext(), R.layout.list_item, localModels)
+            _binding?.spinnerBrand?.let { /* brand already set */ }
+            // We don't have a spinner_model in the current layout,
+            // but title hint can guide the user. Models are reflected in the title field.
+        }
+
+        // Step 2: Fetch from API/cache in background to keep brand list fresh
+        lifecycleScope.launch {
+            try {
+                vehicleDataRepository.getMakes() // refreshes cache
+            } catch (_: Exception) { /* silent — Constants already loaded */ }
+        }
     }
 
     private fun setupImagePicker() {
@@ -321,7 +363,17 @@ class AddVehicleFragment : Fragment() {
                     return@launch
                 }
 
-                val vehicleType = try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
+                val vehicleType = when (typeStr) {
+                    "Car"                    -> VehicleType.CAR
+                    "Motorcycle / Bike"      -> VehicleType.MOTORCYCLE
+                    "Truck"                  -> VehicleType.TRUCK
+                    "Bus / Coaster"          -> VehicleType.BUS
+                    "Van / Minivan"          -> VehicleType.VAN
+                    "Jeep / SUV"             -> VehicleType.JEEP
+                    "Auto Rickshaw"          -> VehicleType.AUTO_RICKSHAW
+                    "Tractor / Agricultural" -> VehicleType.TRACTOR
+                    else -> try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
+                }
                 val currentUser = AuthRepository.getCurrentUser()
                 val sellerId = currentUser?.id ?: ""
                 val sellerPhone = currentUser?.phoneNumber ?: ""

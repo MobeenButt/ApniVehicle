@@ -10,101 +10,140 @@ import com.example.apnivehicle.utils.Constants
 import java.util.concurrent.TimeUnit
 
 /**
- * VehicleDataRepository — fetches makes/models from CarQuery API with 24-hour Room cache.
- * Falls back to Constants.VEHICLE_MAKES when API and cache are both unavailable.
+ * VehicleDataRepository
+ *
+ * Strategy (in priority order):
+ * 1. Constants.VEHICLE_MODELS / Constants.VEHICLE_MAKES — instant, always available.
+ * 2. Room cache (24-hour TTL) — persists data from previous successful API call.
+ * 3. CarQuery API — fetches fresh data when cache is stale and network is available.
+ *
+ * For makes/models the Constants data is the most reliable source for the Pakistan
+ * market. The API is still tried so we can surface less-common makes.
  */
 class VehicleDataRepository(context: Context) {
 
     private val TAG = "VehicleDataRepository"
-    private val db = VehicleDataCache.getInstance(context)
+    private val db  = VehicleDataCache.getInstance(context)
     private val api = ApiClient.carQueryApi
     private val TTL_MS = TimeUnit.HOURS.toMillis(24)
 
-    // ===== Makes =====
+    // ── Makes ─────────────────────────────────────────────────────────────────
 
     suspend fun getMakes(): List<String> {
+        // Always start with our curated Pakistan list
+        val constantsMakes = Constants.VEHICLE_MAKES.toMutableSet()
+
         return try {
             val lastCached = db.makeDao().getLastCachedAt() ?: 0L
-            val isStale = System.currentTimeMillis() - lastCached > TTL_MS
+            val isStale    = System.currentTimeMillis() - lastCached > TTL_MS
 
             if (!isStale) {
                 val cached = db.makeDao().getAllMakes()
-                if (cached.isNotEmpty()) return cached.map { it.makeDisplay }.sorted()
+                if (cached.isNotEmpty()) {
+                    // Merge cache with constants so we never lose Pakistan-specific makes
+                    val merged = (constantsMakes + cached.map { it.makeDisplay }).toSortedSet()
+                    return merged.toList()
+                }
             }
 
-            // Fetch from API
+            // Fetch from CarQuery
             val response = api.getMakes()
-            val makes = response.makes
-            if (makes.isNotEmpty()) {
+            val apiMakes = response.makes
+            if (apiMakes.isNotEmpty()) {
                 db.makeDao().clearAll()
-                db.makeDao().insertAll(makes.map { CachedMake(it.makeId, it.makeDisplay, it.makeCountry) })
-                makes.map { it.makeDisplay }.sorted()
+                db.makeDao().insertAll(apiMakes.map { CachedMake(it.makeId, it.makeDisplay, it.makeCountry) })
+                // Merge API results with our curated Pakistan list
+                (constantsMakes + apiMakes.map { it.makeDisplay }).toSortedSet().toList()
             } else {
-                fallbackMakes()
+                constantsMakes.toSortedSet().toList()
             }
         } catch (e: Exception) {
-            Log.w(TAG, "getMakes API failed, using cache/fallback", e)
-            val cached = db.makeDao().getAllMakes()
-            if (cached.isNotEmpty()) cached.map { it.makeDisplay }.sorted()
-            else fallbackMakes()
+            Log.w(TAG, "getMakes API failed, using cache/Constants fallback", e)
+            try {
+                val cached = db.makeDao().getAllMakes()
+                if (cached.isNotEmpty()) {
+                    (constantsMakes + cached.map { it.makeDisplay }).toSortedSet().toList()
+                } else {
+                    constantsMakes.toSortedSet().toList()
+                }
+            } catch (_: Exception) {
+                constantsMakes.toSortedSet().toList()
+            }
         }
     }
 
-    // ===== Models =====
+    // ── Models ────────────────────────────────────────────────────────────────
 
+    /**
+     * Returns models for a given make.
+     * Instantly returns from Constants if available (covers all major Pakistan brands),
+     * then tries Room cache and CarQuery API to supplement with less-common models.
+     */
     suspend fun getModels(make: String): List<String> {
+        // Instant result from our curated map — no network needed
+        val constantsModels = getLocalModels(make).toMutableSet()
+
         return try {
-            val makeId = make.lowercase().replace(" ", "_")
+            val makeId     = make.lowercase().replace(" ", "_")
             val lastCached = db.modelDao().getLastCachedAt(makeId) ?: 0L
-            val isStale = System.currentTimeMillis() - lastCached > TTL_MS
+            val isStale    = System.currentTimeMillis() - lastCached > TTL_MS
 
             if (!isStale) {
                 val cached = db.modelDao().getModelsForMake(makeId)
-                if (cached.isNotEmpty()) return cached.map { it.modelName }.distinct().sorted()
+                if (cached.isNotEmpty()) {
+                    return (constantsModels + cached.map { it.modelName }).toSortedSet().toList()
+                }
             }
 
             val response = api.getModels(make)
-            val models = response.models
-            if (models.isNotEmpty()) {
+            val apiModels = response.models
+            if (apiModels.isNotEmpty()) {
                 db.modelDao().clearForMake(makeId)
-                db.modelDao().insertAll(models.map { CachedModel("${makeId}_${it.modelName}", makeId, it.modelName) })
-                models.map { it.modelName }.distinct().sorted()
+                db.modelDao().insertAll(
+                    apiModels.map { CachedModel("${makeId}_${it.modelName}", makeId, it.modelName) }
+                )
+                (constantsModels + apiModels.map { it.modelName }).toSortedSet().toList()
             } else {
-                fallbackModels(make)
+                constantsModels.toSortedSet().toList()
             }
         } catch (e: Exception) {
-            Log.w(TAG, "getModels API failed for $make, using cache/fallback", e)
-            val makeId = make.lowercase().replace(" ", "_")
-            val cached = db.modelDao().getModelsForMake(makeId)
-            if (cached.isNotEmpty()) cached.map { it.modelName }.distinct().sorted()
-            else fallbackModels(make)
+            Log.w(TAG, "getModels API failed for $make, using cache/Constants", e)
+            try {
+                val makeId = make.lowercase().replace(" ", "_")
+                val cached = db.modelDao().getModelsForMake(makeId)
+                if (cached.isNotEmpty()) {
+                    (constantsModels + cached.map { it.modelName }).toSortedSet().toList()
+                } else {
+                    constantsModels.toSortedSet().toList()
+                }
+            } catch (_: Exception) {
+                constantsModels.toSortedSet().toList()
+            }
         }
     }
 
-    // ===== Years =====
+    /**
+     * Synchronous instant lookup — returns models from Constants without any
+     * network or database call. Use this for immediate dropdown population.
+     */
+    fun getLocalModels(make: String): List<String> {
+        // Try exact key first
+        Constants.VEHICLE_MODELS[make]?.let { return it.sorted() }
+        // Try case-insensitive match
+        val key = Constants.VEHICLE_MODELS.keys.firstOrNull {
+            it.equals(make, ignoreCase = true)
+        }
+        return Constants.VEHICLE_MODELS[key]?.sorted() ?: emptyList()
+    }
+
+    // ── Years ─────────────────────────────────────────────────────────────────
 
     fun getYears(): List<Int> {
         val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
-        return (currentYear downTo 1980).toList()
+        return (currentYear downTo Constants.MIN_YEAR).toList()
     }
 
-    // ===== Fallbacks =====
+    // ── Makes that have locally known models ──────────────────────────────────
 
-    private fun fallbackMakes(): List<String> = Constants.VEHICLE_MAKES
-
-    private fun fallbackModels(make: String): List<String> {
-        return when (make.lowercase()) {
-            "toyota" -> listOf("Corolla", "Yaris", "Fortuner", "Hilux", "Land Cruiser", "Prado", "Camry", "Vitz", "Aqua", "Prius")
-            "honda" -> listOf("Civic", "City", "Accord", "BR-V", "HR-V", "Vezel", "Fit", "N-Box", "Jazz")
-            "suzuki" -> listOf("Alto", "Cultus", "Swift", "Wagon R", "Bolan", "Ravi", "Jimny", "Vitara", "Mehran")
-            "hyundai" -> listOf("Elantra", "Sonata", "Tucson", "Santa Fe", "Grand Starex", "Ioniq", "Creta")
-            "kia" -> listOf("Sportage", "Picanto", "Stonic", "Sorento", "Carnival", "Seltos")
-            "nissan" -> listOf("Sunny", "Dayz", "Juke", "X-Trail", "Patrol", "Navara")
-            "mitsubishi" -> listOf("Lancer", "Pajero", "Outlander", "Eclipse Cross", "L200")
-            "daihatsu" -> listOf("Mira", "Move", "Cuore", "Terios", "Hijet")
-            "mg" -> listOf("HS", "ZS", "RX5", "GT", "5")
-            "changan" -> listOf("Alsvin", "Oshan X7", "Karvaan", "M9")
-            else -> emptyList()
-        }.sorted()
-    }
+    fun getMakesWithLocalModels(): List<String> = Constants.VEHICLE_MODELS.keys.sorted()
 }
