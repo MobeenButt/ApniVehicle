@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.security.crypto)
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation(libs.viewpager2)
     implementation(libs.swiperefresh)
 

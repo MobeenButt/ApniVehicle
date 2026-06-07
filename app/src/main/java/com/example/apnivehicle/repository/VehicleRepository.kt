@@ -173,9 +173,11 @@ object VehicleRepository {
     fun deleteVehicle(vehicleId: String) {
         val vehicle = vehicles.find { it.id == vehicleId }
         vehicles.removeAll { it.id == vehicleId }
+        // Clean up local image files
         vehicle?.let {
-            if (!it.imageUri.isNullOrEmpty()) FileManager.deleteImage(it.imageUri!!)
-            if (it.imageList.isNotEmpty()) FileManager.deleteImages(it.imageList)
+            val allPaths = it.imageList.toMutableList()
+            if (!it.imageUri.isNullOrEmpty() && it.imageUri !in allPaths) allPaths.add(it.imageUri!!)
+            com.example.apnivehicle.utils.ImageSaver.deleteImages(allPaths)
         }
         if (favoriteIds.remove(vehicleId)) FileManager.saveFavorites(favoriteIds.toList())
         FileManager.saveVehicles(vehicles)

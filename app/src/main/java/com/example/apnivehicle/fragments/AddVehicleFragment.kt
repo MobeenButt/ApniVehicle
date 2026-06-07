@@ -13,8 +13,10 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.apnivehicle.R
+import com.example.apnivehicle.adapters.ImageThumbnailAdapter
 import com.example.apnivehicle.databinding.FragmentAddVehicleBinding
 import com.example.apnivehicle.models.Vehicle
 import com.example.apnivehicle.models.VehicleType
@@ -22,15 +24,15 @@ import com.example.apnivehicle.repository.AuthRepository
 import com.example.apnivehicle.repository.VehicleDataRepository
 import com.example.apnivehicle.repository.VehicleRepository
 import com.example.apnivehicle.utils.Constants
-import com.example.apnivehicle.utils.FileManager
+import com.example.apnivehicle.utils.ImgBBUploader
 import com.example.apnivehicle.utils.NetworkMonitor
 import com.example.apnivehicle.utils.NotificationHelper
 import com.example.apnivehicle.utils.ValidationUtils
 import com.example.apnivehicle.utils.setDebouncedClickListener
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class AddVehicleFragment : Fragment() {
 
@@ -39,6 +41,7 @@ class AddVehicleFragment : Fragment() {
 
     private val selectedImageUris = mutableListOf<Uri>()
     private lateinit var vehicleDataRepository: VehicleDataRepository
+    private lateinit var thumbnailAdapter: ImageThumbnailAdapter
 
     private val pickImagesLauncher = registerForActivityResult(
         ActivityResultContracts.GetMultipleContents()
@@ -48,11 +51,11 @@ class AddVehicleFragment : Fragment() {
             val urisToAdd = uris.take(remainingSlots)
             selectedImageUris.addAll(urisToAdd)
             updateImagePreview()
-            
+            thumbnailAdapter.notifyDataSetChanged()
             if (uris.size > remainingSlots) {
                 Toast.makeText(
                     requireContext(),
-                    "Maximum ${Constants.MAX_IMAGES} images allowed. ${uris.size - remainingSlots} images not added.",
+                    "Max ${Constants.MAX_IMAGES} images. ${uris.size - remainingSlots} not added.",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -60,9 +63,7 @@ class AddVehicleFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentAddVehicleBinding.inflate(inflater, container, false)
         return binding.root
@@ -70,44 +71,68 @@ class AddVehicleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         vehicleDataRepository = VehicleDataRepository(requireContext())
-
+        setupThumbnailRecycler()
         setupDropdowns()
         setupImagePicker()
         setupSubmitButton()
         playEntryAnimation()
 
-        // Show offline warning if needed
         NetworkMonitor.isOnline.observe(viewLifecycleOwner) { online ->
             val b = _binding ?: return@observe
-            if (b.buttonAddVehicle.text != "Uploading...") {
-                b.buttonAddVehicle.isEnabled = online
-            }
+            // Keep button always enabled — offline posts save locally as fallback
+            b.buttonAddVehicle.isEnabled = true
             if (!online) {
-                Snackbar.make(b.root, "You are offline. Cannot post ad.", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(b.root,
+                    "You are offline. Images will be saved locally and won't be visible on other devices.",
+                    Snackbar.LENGTH_LONG).show()
             }
         }
 
-        // Load makes from API
         lifecycleScope.launch {
             try {
                 val makes = vehicleDataRepository.getMakes()
                 val b = _binding ?: return@launch
-                val makeAdapter = ArrayAdapter(requireContext(), R.layout.list_item, makes)
-                b.spinnerBrand.setAdapter(makeAdapter)
-            } catch (_: Exception) {
-                if (_binding != null) setupDropdowns()
-            }
+                b.spinnerBrand.setAdapter(
+                    ArrayAdapter(requireContext(), R.layout.list_item, makes)
+                )
+            } catch (_: Exception) { /* Constants fallback already set */ }
         }
     }
 
+    // ── Thumbnail strip ───────────────────────────────────────────────────────
+
+    private fun setupThumbnailRecycler() {
+        thumbnailAdapter = ImageThumbnailAdapter(
+            uris = selectedImageUris,
+            onRemove = { position ->
+                selectedImageUris.removeAt(position)
+                thumbnailAdapter.notifyItemRemoved(position)
+                thumbnailAdapter.notifyItemRangeChanged(position, selectedImageUris.size)
+                updateImagePreview()
+            },
+            onClick = { position ->
+                // Show tapped image as preview
+                if (position < selectedImageUris.size) {
+                    binding.ivVehicleImage.clearColorFilter()
+                    Glide.with(this)
+                        .load(selectedImageUris[position])
+                        .centerCrop()
+                        .into(binding.ivVehicleImage)
+                }
+            }
+        )
+        binding.rvImageThumbnails.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.rvImageThumbnails.adapter = thumbnailAdapter
+    }
+
+    // ── Entry animation ───────────────────────────────────────────────────────
+
     private fun playEntryAnimation() {
         val root = _binding?.root ?: return
-        // Stagger each direct child card in
         val container = (root as? androidx.core.widget.NestedScrollView)
             ?.getChildAt(0) as? android.widget.LinearLayout ?: return
-
         for (i in 0 until container.childCount) {
             val child = container.getChildAt(i)
             child.alpha = 0f
@@ -116,294 +141,271 @@ class AddVehicleFragment : Fragment() {
             val fadeIn = ObjectAnimator.ofFloat(child, "alpha", 0f, 1f).setDuration(350)
             val slide = ObjectAnimator.ofFloat(child, "translationY", 40f, 0f).setDuration(380)
             slide.interpolator = DecelerateInterpolator()
-            AnimatorSet().apply {
-                playTogether(fadeIn, slide)
-                startDelay = delay
-                start()
-            }
+            AnimatorSet().apply { playTogether(fadeIn, slide); startDelay = delay; start() }
         }
     }
+
+    // ── Dropdowns ─────────────────────────────────────────────────────────────
 
     private fun setupDropdowns() {
-        // Vehicle Types
-        val types = VehicleType.values().map { type ->
-            when (type) {
-                VehicleType.CAR -> "Car"
-                VehicleType.MOTORCYCLE -> "Motorcycle / Bike"
-                VehicleType.TRUCK -> "Truck"
-                VehicleType.BUS -> "Bus / Coaster"
-                VehicleType.VAN -> "Van / Minivan"
-                VehicleType.JEEP -> "Jeep / SUV"
-                VehicleType.AUTO_RICKSHAW -> "Auto Rickshaw"
-                VehicleType.TRACTOR -> "Tractor / Agricultural"
-            }
-        }
+        val types = VehicleType.values().map { it.toDisplayName() }
         binding.spinnerType.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, types))
-
-        // Cities
-        binding.spinnerCity.setAdapter(
-            ArrayAdapter(requireContext(), R.layout.list_item, Constants.PAKISTANI_CITIES)
-        )
-
-        // Fuel Types
-        binding.spinnerFuel.setAdapter(
-            ArrayAdapter(requireContext(), R.layout.list_item, Constants.FUEL_TYPES)
-        )
-
-        // Transmission
-        binding.spinnerTransmission.setAdapter(
-            ArrayAdapter(requireContext(), R.layout.list_item, Constants.TRANSMISSION_TYPES)
-        )
-
-        // Condition
-        binding.spinnerCondition.setAdapter(
-            ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_CONDITIONS)
-        )
-
-        // Brand — start with curated Pakistan list
-        binding.spinnerBrand.setAdapter(
-            ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_MAKES)
-        )
-
-        // When brand changes, immediately populate models from Constants (no network needed),
-        // then refresh in background from API if available.
+        binding.spinnerCity.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, Constants.PAKISTANI_CITIES))
+        binding.spinnerFuel.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, Constants.FUEL_TYPES))
+        binding.spinnerTransmission.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, Constants.TRANSMISSION_TYPES))
+        binding.spinnerCondition.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_CONDITIONS))
+        binding.spinnerBrand.setAdapter(ArrayAdapter(requireContext(), R.layout.list_item, Constants.VEHICLE_MAKES))
         binding.spinnerBrand.setOnItemClickListener { _, _, _, _ ->
-            val selectedBrand = binding.spinnerBrand.text.toString().trim()
-            if (selectedBrand.isNotBlank()) {
-                loadModelsForBrand(selectedBrand)
+            val brand = binding.spinnerBrand.text.toString().trim()
+            if (brand.isNotBlank()) {
+                lifecycleScope.launch {
+                    try { vehicleDataRepository.getMakes() } catch (_: Exception) {}
+                }
             }
         }
     }
 
-    private fun loadModelsForBrand(brand: String) {
-        // Step 1: Instantly populate from local Constants (no delay)
-        val localModels = vehicleDataRepository.getLocalModels(brand)
-        if (localModels.isNotEmpty()) {
-            val modelAdapter = ArrayAdapter(requireContext(), R.layout.list_item, localModels)
-            _binding?.spinnerBrand?.let { /* brand already set */ }
-            // We don't have a spinner_model in the current layout,
-            // but title hint can guide the user. Models are reflected in the title field.
-        }
-
-        // Step 2: Fetch from API/cache in background to keep brand list fresh
-        lifecycleScope.launch {
-            try {
-                vehicleDataRepository.getMakes() // refreshes cache
-            } catch (_: Exception) { /* silent — Constants already loaded */ }
-        }
-    }
+    // ── Image picker ──────────────────────────────────────────────────────────
 
     private fun setupImagePicker() {
         binding.btnSelectImage.setOnClickListener {
             if (selectedImageUris.size >= Constants.MAX_IMAGES) {
-                Toast.makeText(
-                    requireContext(),
-                    "Maximum ${Constants.MAX_IMAGES} images allowed",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Maximum ${Constants.MAX_IMAGES} photos allowed", Toast.LENGTH_SHORT).show()
             } else {
                 pickImagesLauncher.launch("image/*")
             }
         }
-        
+        // Tap placeholder to open picker too
+        binding.layoutImagePlaceholder.setOnClickListener {
+            if (selectedImageUris.size < Constants.MAX_IMAGES) pickImagesLauncher.launch("image/*")
+        }
         binding.btnClearImages.setOnClickListener {
             selectedImageUris.clear()
+            thumbnailAdapter.notifyDataSetChanged()
             updateImagePreview()
         }
     }
 
     private fun updateImagePreview() {
-        if (selectedImageUris.isNotEmpty()) {
-            // Clear any tint before Glide loads so the real image is never tinted
+        val count = selectedImageUris.size
+        binding.textImageCount.text = "$count / ${Constants.MAX_IMAGES}"
+
+        if (count > 0) {
             binding.ivVehicleImage.clearColorFilter()
             Glide.with(this)
                 .load(selectedImageUris[0])
-                .override(800, 600)
                 .centerCrop()
                 .placeholder(R.drawable.ic_car_rental)
                 .into(binding.ivVehicleImage)
-            binding.textImageCount.text = "${selectedImageUris.size} image(s) selected"
-            binding.textImageCount.visibility = View.VISIBLE
-            binding.btnClearImages.visibility = View.VISIBLE
             binding.layoutImagePlaceholder.visibility = View.GONE
+            binding.rvImageThumbnails.visibility = View.VISIBLE
+            binding.btnClearImages.visibility = View.VISIBLE
         } else {
             binding.ivVehicleImage.clearColorFilter()
             binding.ivVehicleImage.setImageResource(R.drawable.ic_car_rental)
-            binding.textImageCount.visibility = View.GONE
-            binding.btnClearImages.visibility = View.GONE
             binding.layoutImagePlaceholder.visibility = View.VISIBLE
+            binding.rvImageThumbnails.visibility = View.GONE
+            binding.btnClearImages.visibility = View.GONE
         }
     }
 
+    // ── Submit ────────────────────────────────────────────────────────────────
+
     private fun setupSubmitButton() {
-        binding.buttonAddVehicle.setDebouncedClickListener(1500L) {
-            validateAndSubmit()
-        }
+        binding.buttonAddVehicle.setDebouncedClickListener(1500L) { validateAndSubmit() }
     }
 
     private fun validateAndSubmit() {
-        // Get input values
-        val title = binding.inputTitle.text.toString().trim()
-        val priceStr = binding.inputPrice.text.toString().trim()
-        val city = binding.spinnerCity.text.toString().trim()
-        val yearStr = binding.inputYear.text.toString().trim()
-        val mileageStr = binding.inputMileage.text.toString().trim()
-        val typeStr = binding.spinnerType.text.toString()
-        val brand = binding.spinnerBrand.text.toString().trim()
-        val fuelType = binding.spinnerFuel.text.toString()
+        val title        = binding.inputTitle.text.toString().trim()
+        val priceStr     = binding.inputPrice.text.toString().trim()
+        val city         = binding.spinnerCity.text.toString().trim()
+        val yearStr      = binding.inputYear.text.toString().trim()
+        val mileageStr   = binding.inputMileage.text.toString().trim()
+        val typeStr      = binding.spinnerType.text.toString()
+        val brand        = binding.spinnerBrand.text.toString().trim()
+        val fuelType     = binding.spinnerFuel.text.toString()
         val transmission = binding.spinnerTransmission.text.toString()
-        val condition = binding.spinnerCondition.text.toString()
-        val description = binding.inputDescription.text.toString().trim()
+        val condition    = binding.spinnerCondition.text.toString()
+        val description  = binding.inputDescription.text.toString().trim()
 
-        // Validate title
-        val titleValidation = ValidationUtils.validateVehicleTitle(title)
-        if (!titleValidation.isValid) {
-            binding.textInputLayoutTitle.error = titleValidation.errorMessage
-            return
-        } else {
-            binding.textInputLayoutTitle.error = null
-        }
+        // Field validation
+        if (!validate(title, priceStr, city, yearStr, mileageStr,
+                typeStr, brand, fuelType, transmission, condition, description)) return
 
-        // Validate price
-        val price = priceStr.toLongOrNull()
-        val priceValidation = ValidationUtils.validatePrice(price)
-        if (!priceValidation.isValid) {
-            binding.textInputLayoutPrice.error = priceValidation.errorMessage
-            return
-        } else {
-            binding.textInputLayoutPrice.error = null
-        }
+        val price   = priceStr.toLong()
+        val year    = yearStr.toInt()
+        val mileage = mileageStr.toInt()
 
-        // Validate city
-        val cityValidation = ValidationUtils.validateCity(city)
-        if (!cityValidation.isValid) {
-            Snackbar.make(binding.root, cityValidation.errorMessage ?: "Invalid city", Snackbar.LENGTH_SHORT).show()
-            return
-        }
-
-        // Validate year
-        val year = yearStr.toIntOrNull()
-        val yearValidation = ValidationUtils.validateYear(year)
-        if (!yearValidation.isValid) {
-            binding.textInputLayoutYear.error = yearValidation.errorMessage
-            return
-        } else {
-            binding.textInputLayoutYear.error = null
-        }
-
-        // Validate mileage
-        val mileage = mileageStr.toIntOrNull()
-        val mileageValidation = ValidationUtils.validateMileage(mileage)
-        if (!mileageValidation.isValid) {
-            binding.textInputLayoutMileage.error = mileageValidation.errorMessage
-            return
-        } else {
-            binding.textInputLayoutMileage.error = null
-        }
-
-        // Validate description
-        val descriptionValidation = ValidationUtils.validateDescription(description)
-        if (!descriptionValidation.isValid) {
-            binding.textInputLayoutDescription.error = descriptionValidation.errorMessage
-            return
-        } else {
-            binding.textInputLayoutDescription.error = null
-        }
-
-        // Validate images
-        val imageValidation = ValidationUtils.validateImages(selectedImageUris.size)
-        if (!imageValidation.isValid) {
-            Snackbar.make(binding.root, imageValidation.errorMessage ?: "Please add at least one image", Snackbar.LENGTH_SHORT).show()
-            return
-        }
-
-        // Validate required dropdowns
-        if (typeStr.isBlank() || brand.isBlank() || fuelType.isBlank() || transmission.isBlank() || condition.isBlank()) {
-            Snackbar.make(binding.root, "Please fill all required fields", Snackbar.LENGTH_SHORT).show()
-            return
-        }
-
-        // Show progress
-        binding.buttonAddVehicle.isEnabled = false
-        binding.buttonAddVehicle.text = "Uploading..."
-        binding.progressSubmit?.visibility = View.VISIBLE
+        setLoadingState(true, 0, selectedImageUris.size)
 
         lifecycleScope.launch {
             try {
-                val uploadedUrls = mutableListOf<String>()
+                val uploadedUrls = uploadImages()
 
-                if (NetworkMonitor.isCurrentlyOnline()) {
-                    // Upload to Firebase Storage
-                    val storage = FirebaseStorage.getInstance()
-                    for (uri in selectedImageUris) {
-                        try {
-                            val ref = storage.reference.child("vehicles/${System.currentTimeMillis()}_${uri.lastPathSegment}")
-                            ref.putFile(uri).await()
-                            val downloadUrl = ref.downloadUrl.await().toString()
-                            uploadedUrls.add(downloadUrl)
-                        } catch (e: Exception) {
-                            android.util.Log.e("AddVehicle", "Storage upload failed, using local", e)
-                            val localPath = FileManager.saveImageFromUri(uri)
-                            if (localPath != null) uploadedUrls.add(localPath)
-                        }
-                    }
-                } else {
-                    // Offline: save locally
-                    for (uri in selectedImageUris) {
-                        val localPath = FileManager.saveImageFromUri(uri)
-                        if (localPath != null) uploadedUrls.add(localPath)
-                    }
-                }
-
-                // Fragment may have been destroyed while we were uploading — check before touching views
                 if (_binding == null) return@launch
-
                 if (uploadedUrls.isEmpty()) {
-                    Snackbar.make(binding.root, "Failed to save images. Please try again.", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, "Failed to save images. Please try again.", Snackbar.LENGTH_LONG).show()
                     return@launch
                 }
 
-                val vehicleType = when (typeStr) {
-                    "Car"                    -> VehicleType.CAR
-                    "Motorcycle / Bike"      -> VehicleType.MOTORCYCLE
-                    "Truck"                  -> VehicleType.TRUCK
-                    "Bus / Coaster"          -> VehicleType.BUS
-                    "Van / Minivan"          -> VehicleType.VAN
-                    "Jeep / SUV"             -> VehicleType.JEEP
-                    "Auto Rickshaw"          -> VehicleType.AUTO_RICKSHAW
-                    "Tractor / Agricultural" -> VehicleType.TRACTOR
-                    else -> try { VehicleType.valueOf(typeStr) } catch (_: Exception) { VehicleType.CAR }
-                }
-                val currentUser = AuthRepository.getCurrentUser()
-                val sellerId = currentUser?.id ?: ""
-                val sellerPhone = currentUser?.phoneNumber ?: ""
-
+                val currentUser  = AuthRepository.getCurrentUser()
+                val vehicleType  = typeStr.toVehicleType()
                 val vehicle = Vehicle(
-                    title = title, price = price!!, city = city, year = year!!,
-                    type = vehicleType, brand = brand, fuelType = fuelType,
-                    transmission = transmission, condition = condition, mileage = mileage!!,
-                    imageUri = uploadedUrls[0], imageList = uploadedUrls.toMutableList(),
-                    description = description, isMyAd = true,
-                    sellerId = sellerId, sellerPhone = sellerPhone
+                    title        = title,
+                    price        = price,
+                    city         = city,
+                    year         = year,
+                    type         = vehicleType,
+                    brand        = brand,
+                    fuelType     = fuelType,
+                    transmission = transmission,
+                    condition    = condition,
+                    mileage      = mileage,
+                    imageUri     = uploadedUrls[0],         // cover image
+                    imageList    = uploadedUrls.toMutableList(), // ALL images
+                    description  = description,
+                    isMyAd       = true,
+                    sellerId     = currentUser?.id ?: "",
+                    sellerPhone  = currentUser?.phoneNumber ?: ""
                 )
 
                 VehicleRepository.addVehicleAsync(vehicle)
 
-                // Only show UI feedback if fragment is still attached
                 if (_binding != null) {
                     NotificationHelper(requireContext()).showVehicleAdded(title)
-                    Snackbar.make(binding.root, Constants.SUCCESS_VEHICLE_ADDED, Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(binding.root, "✅ Ad posted! ${uploadedUrls.size} image(s) saved.", Snackbar.LENGTH_LONG).show()
                     clearForm()
                 }
-            } finally {
-                // Re-enable button only if view still exists
-                _binding?.let {
-                    it.buttonAddVehicle.isEnabled = true
-                    it.buttonAddVehicle.text = "Post Ad Now"
-                    it.progressSubmit?.visibility = View.GONE
+            } catch (e: Exception) {
+                android.util.Log.e("AddVehicle", "Submit failed", e)
+                if (_binding != null) {
+                    Snackbar.make(binding.root, "Error: ${e.message ?: "Unknown error"}", Snackbar.LENGTH_LONG).show()
                 }
+            } finally {
+                _binding?.let { setLoadingState(false, 0, 0) }
             }
         }
+    }
+
+    // ── Image upload ──────────────────────────────────────────────────────────
+
+    /**
+     * Upload all selected images to ImgBB.
+     * Returns list of permanent https:// URLs (or local paths as fallback).
+     *
+     * Flow:
+     *  compress → Base64 → POST to ImgBB → get URL → store in Firestore
+     *  Any device can then load the image via Glide using the URL.
+     */
+    private suspend fun uploadImages(): List<String> {
+        val total = selectedImageUris.size
+        val vehicleTitle = withContext(Dispatchers.Main) {
+            _binding?.inputTitle?.text?.toString()?.trim()?.take(30) ?: "vehicle"
+        }
+
+        // Show overlay on Main thread
+        withContext(Dispatchers.Main) {
+            _binding?.layoutUploadProgress?.visibility = View.VISIBLE
+            _binding?.tvUploadProgress?.text = "Preparing images…"
+            _binding?.tvUploadPercent?.text = "0%"
+            _binding?.uploadProgressIndicator?.progress = 0
+        }
+
+        // Upload all images — callback switches to Main for UI updates
+        val results = ImgBBUploader.uploadAll(
+            context      = requireContext(),
+            uris         = selectedImageUris,
+            vehicleTitle = vehicleTitle,
+            onImageProgress = { imageIndex: Int, percent: Int ->
+                val humanIndex = imageIndex + 1
+                val overall    = ((imageIndex * 100 + percent) / total).coerceIn(0, 100)
+                val progressText = if (percent < 100)
+                    "Uploading image $humanIndex of $total…"
+                else
+                    "Image $humanIndex of $total done ✓"
+                // Switch to Main thread to update UI
+                lifecycleScope.launch(Dispatchers.Main) {
+                    val b = _binding ?: return@launch
+                    b.tvUploadProgress.text = progressText
+                    b.tvUploadPercent.text = "$overall%"
+                    b.uploadProgressIndicator.progress = overall
+                }
+            }
+        )
+
+        // Hide overlay
+        withContext(Dispatchers.Main) {
+            _binding?.layoutUploadProgress?.visibility = View.GONE
+        }
+
+        val urls        = results.map { result -> result.url }
+        val localCount  = results.count { result -> result.isLocal }
+        val remoteCount = results.count { result -> !result.isLocal }
+
+        android.util.Log.d("AddVehicle",
+            "Upload complete: $remoteCount to ImgBB, $localCount local. URLs: $urls")
+
+        if (localCount > 0) {
+            withContext(Dispatchers.Main) {
+                val b = _binding ?: return@withContext
+                Snackbar.make(
+                    b.root,
+                    "$localCount image(s) saved locally — connect to internet for full upload",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        return urls
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────────
+
+    private fun validate(
+        title: String, priceStr: String, city: String, yearStr: String,
+        mileageStr: String, typeStr: String, brand: String,
+        fuelType: String, transmission: String, condition: String, description: String
+    ): Boolean {
+        var ok = true
+
+        val titleV = ValidationUtils.validateVehicleTitle(title)
+        binding.textInputLayoutTitle.error = if (!titleV.isValid) { ok = false; titleV.errorMessage } else null
+
+        val price = priceStr.toLongOrNull()
+        val priceV = ValidationUtils.validatePrice(price)
+        binding.textInputLayoutPrice.error = if (!priceV.isValid) { ok = false; priceV.errorMessage } else null
+
+        val cityV = ValidationUtils.validateCity(city)
+        if (!cityV.isValid) { ok = false; Snackbar.make(binding.root, cityV.errorMessage ?: "Select a city", Snackbar.LENGTH_SHORT).show() }
+
+        val year = yearStr.toIntOrNull()
+        val yearV = ValidationUtils.validateYear(year)
+        binding.textInputLayoutYear.error = if (!yearV.isValid) { ok = false; yearV.errorMessage } else null
+
+        val mileage = mileageStr.toIntOrNull()
+        val mileV = ValidationUtils.validateMileage(mileage)
+        binding.textInputLayoutMileage.error = if (!mileV.isValid) { ok = false; mileV.errorMessage } else null
+
+        val descV = ValidationUtils.validateDescription(description)
+        binding.textInputLayoutDescription.error = if (!descV.isValid) { ok = false; descV.errorMessage } else null
+
+        val imageV = ValidationUtils.validateImages(selectedImageUris.size)
+        if (!imageV.isValid) { ok = false; Snackbar.make(binding.root, imageV.errorMessage ?: "Add at least 1 photo", Snackbar.LENGTH_SHORT).show() }
+
+        if (typeStr.isBlank() || brand.isBlank() || fuelType.isBlank() || transmission.isBlank() || condition.isBlank()) {
+            ok = false
+            Snackbar.make(binding.root, "Please fill all required fields", Snackbar.LENGTH_SHORT).show()
+        }
+        return ok
+    }
+
+    // ── UI helpers ────────────────────────────────────────────────────────────
+
+    private fun setLoadingState(loading: Boolean, done: Int, total: Int) {
+        binding.buttonAddVehicle.isEnabled = !loading
+        binding.buttonAddVehicle.text = if (loading) "Uploading…" else "Post Ad Now"
+        binding.progressSubmit?.visibility = if (loading && total == 0) View.VISIBLE else View.GONE
+        if (!loading) binding.layoutUploadProgress.visibility = View.GONE
     }
 
     private fun clearForm() {
@@ -419,9 +421,8 @@ class AddVehicleFragment : Fragment() {
         binding.spinnerCondition.text = null
         binding.inputDescription.text?.clear()
         selectedImageUris.clear()
+        thumbnailAdapter.notifyDataSetChanged()
         updateImagePreview()
-        
-        // Clear errors
         binding.textInputLayoutTitle.error = null
         binding.textInputLayoutPrice.error = null
         binding.textInputLayoutYear.error = null
@@ -432,5 +433,30 @@ class AddVehicleFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    // ── Extension helpers ─────────────────────────────────────────────────────
+
+    private fun VehicleType.toDisplayName(): String = when (this) {
+        VehicleType.CAR           -> "Car"
+        VehicleType.MOTORCYCLE    -> "Motorcycle / Bike"
+        VehicleType.TRUCK         -> "Truck"
+        VehicleType.BUS           -> "Bus / Coaster"
+        VehicleType.VAN           -> "Van / Minivan"
+        VehicleType.JEEP          -> "Jeep / SUV"
+        VehicleType.AUTO_RICKSHAW -> "Auto Rickshaw"
+        VehicleType.TRACTOR       -> "Tractor / Agricultural"
+    }
+
+    private fun String.toVehicleType(): VehicleType = when (this) {
+        "Car"                    -> VehicleType.CAR
+        "Motorcycle / Bike"      -> VehicleType.MOTORCYCLE
+        "Truck"                  -> VehicleType.TRUCK
+        "Bus / Coaster"          -> VehicleType.BUS
+        "Van / Minivan"          -> VehicleType.VAN
+        "Jeep / SUV"             -> VehicleType.JEEP
+        "Auto Rickshaw"          -> VehicleType.AUTO_RICKSHAW
+        "Tractor / Agricultural" -> VehicleType.TRACTOR
+        else -> try { VehicleType.valueOf(this) } catch (_: Exception) { VehicleType.CAR }
     }
 }
