@@ -603,7 +603,7 @@ Tap vehicle card → DetailActivity
 ## 📄 License
 
 ```
-MIT License — Copyright (c) 2025 ApniVehicle
+UET License — Copyright (c) 2026 ApniVehicle
 Free to use, modify, and distribute with attribution.
 ```
 
